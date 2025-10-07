@@ -8,7 +8,7 @@
 
 | Task ID | Title | Status | Priority | Assignee | Blocked By |
 |---------|-------|--------|----------|----------|------------|
-| TASK-001 | Deploy to GitHub Pages | 🔴 TODO | HIGH | Agent | - |
+| TASK-001 | Deploy to GitHub Pages | � DONE | HIGH | Agent | - |
 | TASK-002 | Multi-Tab Architecture | 🔴 TODO | MEDIUM | Agent | TASK-001 |
 | TASK-003 | Multi-UR Generator & QR | 🔴 TODO | HIGH | Agent | TASK-002 |
 | TASK-004 | QR Scanner & Decoder | 🔴 TODO | HIGH | Agent | TASK-002 |
