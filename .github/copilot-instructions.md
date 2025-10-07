@@ -44,39 +44,44 @@ A client-only playground for exploring BC-UR encoding (Uniform Resources) with m
 ## Core Principles
 
 1. **Trust the Library**  
-   - Use `@ngraveio/bc-ur@2.0.0-beta.9` from `esm.sh` CDN (pinned version)
+   - Use `@ngraveio/bc-ur` library as authoritative implementation
    - Never reimplement encoding pipelines—leverage `UR.pipeline`, `BytewordEncoding`, `UrFountainEncoder`, `UrFountainDecoder`
    - **Always verify behavior against `reference_projects/bc-ur/README.md` first**
    - Study reference implementations in `reference_projects/` before writing code
+   - **Development:** Use local yarn package (`@ngraveio/bc-ur@2.0.0-beta.9`)
+   - **Production:** CDN import with pinned version (`https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9`)
 
-2. **Client-Only Architecture**  
-   - No backend, no server round-trips, no analytics, no tracking
+2. **Client-First Architecture**  
+   - Default: client-side processing, no backend, no analytics
+   - Exception: analytics/tracking allowed when justified (document rationale)
+   - Sensitive data (URs, decoded CBOR) never sent to third parties
    - Multi-tab single-page app with hash-based routing
-   - CDN imports only; local fallback commented for offline scenarios
 
 3. **Simplicity Over Abstractions**  
-   - Vanilla JS with semantic HTML and modular CSS
-   - Focused classes per feature (FormatConverter, MultiURGenerator, etc.)
-   - Only suggest complexity when concrete performance/accessibility/maintainability gains outweigh cost
+   - Start with vanilla JS + semantic HTML + modular CSS
+   - Only suggest frameworks/build tools when benefits outweigh costs
+   - Decision framework: measure complexity cost vs concrete gains
+   - **Allowed when justified:** React, Rollup, build tools (document rationale)
 
 4. **Explicit Errors**  
    - Every failure surfaces visible, contextual UI messages (e.g., "Invalid hex (odd length)", "Incomplete multi-part UR: 40% progress")
-   - Never silently ignore malformed input—show pipeline step where conversion broke
-   - Console errors preserved for debugging (do not remove)
+   - Never silently ignore malformed input—show what broke and why
+   - Console errors preserved for debugging (structured logging encouraged)
 
 5. **Fast Feedback**  
-   - Debounce: 150ms for typing, 10ms for paste, 220ms for UR type override input
-   - Conversion caching (keyed by `rawInput|format|outputFormat|urType|bytewordsStyle`) with 120-item limit
-   - Pipeline visualization updates instantly with color-coded status (green success / red error / gray inactive)
+   - Optimize for perceived performance (instant visual feedback)
+   - Implementation details (debounce timings, cache sizes) in TASK files
+   - Pipeline visualization updates with color-coded status (green success / red error / gray inactive)
 
-6. **No Dangerous Features**  
-   - No persistent storage (`localStorage`, `sessionStorage`, IndexedDB) - exception: temporary sessionStorage for tab forwarding (cleared on close)
-   - No cryptographic key handling
-   - No wallet functionality
+6. **Reference Projects as Authority**  
+   - `reference_projects/` are READ-ONLY and authoritative
+   - Consult order: README → source code → tests
+   - Never modify reference projects (excluded from deployments)
 
 7. **Deterministic & Inspectable**  
-   - Decoded CBOR representations using `cbor2`: JSON (default), Diagnostic, Commented, JavaScript views
-   - UR type auto-detection via registry; manual override when untagged with pattern validation `^[a-z0-9]+(?:-[a-z0-9]+)*$`
+   - Same input → same output (no random state)
+   - State stored in inspectable objects (debuggable in DevTools)
+   - Decoded CBOR with multiple views (JSON, Diagnostic, Commented, JavaScript)
 
 ## Tab Architecture (Multi-Tab SPA)
 
