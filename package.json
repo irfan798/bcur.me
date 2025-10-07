@@ -1,0 +1,10 @@
+{
+  "name": "bcur.me",
+  "version": "0",
+  "description": "Real-time conversion between UR, Bytewords, Hex, and CBOR formats.",
+  "main": "index.js",
+  "repository": "git@github.com:irfan798/bcur.me.git",
+  "author": "irfan798 <irfanbilaloglu@gmail.com>",
+  "license": "MIT",
+  "private": false
+}
