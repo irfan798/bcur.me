@@ -3,10 +3,11 @@
 > A client-only playground for exploring BC-UR encoding (Uniform Resources) with real-time format conversion.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Deploy](https://github.com/irfan798/bcur.me/actions/workflows/deploy.yml/badge.svg)](https://github.com/irfan798/bcur.me/actions/workflows/deploy.yml)
 
 ## 🌐 Live Demo
 
-🚀 **[Try it now](https://irfan798.github.io/bcur.me/)** *(coming soon)*
+🚀 **[Try it now at bcur.me](https://bcur.me)** or [irfan798.github.io/bcur.me](https://irfan798.github.io/bcur.me/)
 
 ## ✨ Features
 
