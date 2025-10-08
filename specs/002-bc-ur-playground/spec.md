@@ -5,6 +5,11 @@
 **Status**: Draft  
 **Input**: User description: "Focus of this project is to allow (mostly) developers and users to have a playground with bc-ur library and animated qr codes, See what is contained in the qr codes and multi-urs, check if the type is in the `ur-registry` be able to debug decoded cbor content. Live play with Registry Items on console and check what is it capable of. If there is an error in their implementation be the source of truth for those libraries. It should also work in mobile browsers because its easier to access camera on you phone for decoding animated qr codes that are composed of multi-part UR code. Also to understand what data is encoded on their wallet that uses urs and make sure their wallet is not sending their mnemonic or private keys etc. Basically online implementation of https://github.com/blockchaincommons/URDemo"
 
+## Clarifications
+
+### Session 2025-10-08
+- Q: When users set `repeatAfterRatio = 0` (infinite looping), what should happen with animation playback and download/export behavior? → A: Loop animation indefinitely but disable downloads, suppress full text list, and present streaming preview that updates as each next part is requested.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Format Conversion & Inspection (Priority: P1)
@@ -35,10 +40,10 @@ Developers need to generate multi-part fountain-encoded URs and display them as 
 
 **Acceptance Scenarios**:
 
-1. **Given** a single UR or hex input, **When** user specifies fountain encoder parameters (max fragment length, min fragment length, sequence number, repeat ratio), **Then** system generates multi-part URs and displays them as text
-2. **Given** generated multi-part URs, **When** user configures QR settings (size, error correction, frame rate), **Then** system displays animated QR code with current part indicator
+1. **Given** a single UR or hex input, **When** user specifies fountain encoder parameters (max fragment length, min fragment length, sequence number, repeat ratio), **Then** system generates multi-part URs and displays them as text or streaming preview as appropriate
+2. **Given** generated multi-part URs, **When** user configures QR settings (size, error correction, frame rate), **Then** system displays animated QR code with current part indicator, looping indefinitely when repeatAfterRatio = 0
 3. **Given** animated QR running, **When** user clicks play/pause/restart controls, **Then** animation responds immediately
-4. **Given** generated parts, **When** user clicks download, **Then** system provides options to export as text file or frames
+4. **Given** generated parts with finite repeats, **When** user clicks download, **Then** system provides options to export as text file or frames; if repeatAfterRatio = 0, system disables downloads and shows guidance to pick a finite repeat
 5. **Given** invalid fountain parameters (e.g., min > max), **When** user attempts generation, **Then** system shows validation error before attempting encoding
 
 ---
@@ -117,6 +122,8 @@ Developers need to dynamically create and test registry items in the browser con
 
 - What happens when user tries to scan QR code in desktop browser (no camera)?
   - System detects no camera available, shows fallback message to use mobile or manual UR paste
+- What happens when user sets repeatAfterRatio = 0 for generation?
+  - System loops the animation infinitely, shows a streaming text preview that updates per part, disables exports, and prompts the user to choose a finite repeat value for downloads
 
 ## Requirements *(mandatory)*
 
@@ -140,13 +147,13 @@ Developers need to dynamically create and test registry items in the browser con
 - **FR-011**: System MUST accept UR or hex input from converter tab or manual entry
 - **FR-012**: System MUST expose all UrFountainEncoder parameters: max fragment length (10-200, default 100), min fragment length (5-50, default 10), first sequence number (default 0), repeat after ratio (0=infinite, default 2)
 - **FR-013**: System MUST generate multi-part URs using fountain encoding with user-specified parameters
-- **FR-014**: System MUST display generated parts as scrollable text list with part numbers (1 of N, 2 of N, etc.)
+- **FR-014**: System MUST display generated parts as scrollable text list with part numbers (1 of N, 2 of N, etc.) when repeatAfterRatio > 0, and MUST instead present a live streaming preview that cycles through parts sequentially, synchronized with animation playback, without enumerating an infinite list when repeatAfterRatio = 0
 - **FR-015**: System MUST render animated QR code on HTML canvas with configurable settings: size (200-800px, default 400), error correction (L/M/Q/H, default L), frame rate (1-30 fps, default 5)
 - **FR-016**: System MUST use alphanumeric QR encoding mode optimized for bytewords
-- **FR-017**: System MUST provide animation controls: play/pause, restart, speed adjustment
+- **FR-017**: System MUST provide animation controls: play/pause, restart, speed adjustment, and maintain continuous looping when repeatAfterRatio = 0
 - **FR-018**: System MUST display current part indicator (e.g., "Part 3 of 15") overlaid on QR code
 - **FR-019**: System MUST validate fountain encoder parameters before generation (min < max, valid ranges)
-- **FR-020**: System MUST provide download options: multi-part UR text file, individual QR frames as images
+- **FR-020**: System MUST provide download options: multi-part UR text file, individual QR frames as images when repeatAfterRatio > 0, and MUST disable exports while presenting guidance to select a finite repeat when repeatAfterRatio = 0
 
 #### QR Scanner & Fountain Decoder (Tab 3)
 
