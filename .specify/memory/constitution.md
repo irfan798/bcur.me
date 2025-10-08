@@ -37,7 +37,7 @@ Prefer client-side processing. All sensitive data processing happens in the brow
 **Rationale:** Privacy-first design ensures user data stays under their control. Client-only deployment is simpler, faster, and more trustworthy. However, some features (A/B testing, error monitoring, performance analytics) may require external services when benefits outweigh privacy costs.
 
 **Enforcement:**
-- Default: no backend, no analytics, no tracking
+- Default: no backend
 - Exception: justify need, document privacy impact, provide opt-out
 - Sensitive data (URs, decoded CBOR) never sent to third parties
 - Temporary state only (no persistent storage without user consent)
