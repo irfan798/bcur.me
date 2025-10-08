@@ -229,9 +229,12 @@ Developers need to dynamically create and test registry items in the browser con
 
 - **bc-ur library** (`@ngraveio/bc-ur@2.0.0-beta.9`): Core encoding/decoding functionality (UR.pipeline, BytewordEncoding, UrFountainEncoder, UrFountainDecoder)
 - **ur-registry packages**: Registry type definitions (tags, CDDL schemas, factory methods)
-  - `@keystonehq/bc-ur-registry`
-  - `@keystonehq/bc-ur-registry-eth`
-  - `@keystonehq/bc-ur-registry-sol`
+  - `@ngraveio/ur-blockchain-commons` - Types defined by BlockChain Commons
+  - `@ngraveio/ur-coin-identity` - Implementation of coin-identity type that can uniquely represent a coin
+  - `@ngraveio/ur-sync` - Implementations of following types: detailed-account, portfolio-coin, portfolio-metadata, portfolio
+  - `@ngraveio/ur-hex-string` - Implementation of hex-string type that encodes and decodes hex string
+  - `@ngraveio/ur-sign` - Implementation of sign request and response protocols for various blockchains
+  - `@ngraveio/ur-uuid` - UUID type implementation
   - Additional packages as listed in reference_projects/ur-registry/README.md
 - **QR code library**: Generation with alphanumeric mode support, error correction levels (L/M/Q/H), canvas output
 - **QR scanner library**: Real-time camera frame processing, QR detection and decoding (jsQR or equivalent)
