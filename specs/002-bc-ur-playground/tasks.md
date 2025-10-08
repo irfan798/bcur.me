@@ -148,7 +148,7 @@
 - [ ] **T044** [US2] Implement multi-part UR generation in `js/multi-ur.js` (UrFountainEncoder.getAllPartsUr(0) for pure fragments)
 - [ ] **T045** [US2] Implement finite parts display in `js/multi-ur.js` (scrollable text list with part numbers when repeatAfterRatio > 0)
 - [ ] **T046** [US2] Implement infinite streaming preview in `js/multi-ur.js` (cycles through parts when repeatAfterRatio = 0, synchronized with animation)
-- [ ] **T047** [US2] Implement QR generation in `js/multi-ur.js` (qrcode@1.5.3 toCanvas, alphanumeric mode, configurable size/EC level)
+- [ ] **T047** [US2] Implement QR generation in `js/multi-ur.js` (qrcode@1.5.3 toCanvas, alphanumeric mode, configurable size/EC level) - **Verify QRCode.toCanvas uses alphanumeric mode per FR-016**
 - [ ] **T048** [US2] Implement QR animation in `js/multi-ur.js` (requestAnimationFrame loop, frame rate control, current part indicator)
 - [ ] **T049** [US2] Implement animation controls in `js/multi-ur.js` (play/pause/restart, speed adjustment, infinite looping for ratio=0)
 - [ ] **T050** [US2] Implement download logic in `js/multi-ur.js` (text file export when finite, disable + guidance when infinite)
