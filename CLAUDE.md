@@ -18,10 +18,6 @@ yarn install
 yarn dev
 # or
 yarn start
-
-# Manual alternatives
-python3 -m http.server 8000
-npx serve
 ```
 
 ## Speckit Workflow (CRITICAL)

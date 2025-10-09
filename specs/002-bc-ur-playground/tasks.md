@@ -33,11 +33,11 @@
 - ✅ `demo.js` - Complete FormatConverter implementation (US1 functionality)
 - ✅ CDN imports configured (@ngraveio/bc-ur@2.0.0-beta.9)
 
-- [ ] **T001** Backup existing `index.html` and `demo.js` to `demo-backup/` folder (preserve working converter)
-- [ ] **T002** Restructure `index.html` - Extract converter HTML into tab section, add tab navigation shell (#converter, #multi-ur, #scanner, #registry)
-- [ ] **T003** [P] Create `css/main.css` - Extract global styles from `index.html` inline CSS (mobile-first, responsive grid)
-- [ ] **T004** [P] Create `css/tabs.css` - Add tab navigation styles (hash-based routing UI, sticky header)
-- [ ] **T005** Update `index.html` - Link external CSS files, keep existing example data buttons
+- [x] **T001** Backup existing `index.html` and `demo.js` to `demo-backup/` folder (preserve working converter)
+- [x] **T002** Restructure `index.html` - Extract converter HTML into tab section, add tab navigation shell (#converter, #multi-ur, #scanner, #registry)
+- [x] **T003** [P] Create `css/main.css` - Extract global styles from `index.html` inline CSS (mobile-first, responsive grid)
+- [x] **T004** [P] Create `css/tabs.css` - Add tab navigation styles (hash-based routing UI, sticky header)
+- [x] **T005** Update `index.html` - Link external CSS files, keep existing example data buttons
 
 **Checkpoint**: Multi-tab shell ready, existing converter preserved in Tab 1
 
@@ -54,13 +54,13 @@
 - ✅ Debounce pattern (conversionTimer)
 - ✅ Error handling (updateStatus, handleError patterns)
 
-- [ ] **T006** Create `js/shared.js` - Extract LRU cache class from `demo.js` (conversionCache → reusable LRUCache class, 120 max entries)
-- [ ] **T007** Add debounce utility to `js/shared.js` - Extract from `demo.js` setTimeout pattern (150ms typing, 10ms paste)
-- [ ] **T008** Add error handling utilities to `js/shared.js` - Extract updateStatus/handleError patterns from `demo.js`
-- [ ] **T009** Create `js/router.js` - Implement hash-based routing (tab switching based on window.location.hash, default to #converter when hash is empty or invalid)
-- [ ] **T010** Add sessionStorage utilities to `js/router.js` - Cross-tab forwarding (setItem/getItem with TTL, clearOnUnload event)
-- [ ] **T011** Create `js/registry-loader.js` - Dynamic ESM import wrapper for 6 ur-registry packages (loadRegistryPackage(key) function)
-- [ ] **T012** Initialize router in `index.html` - Add router.init() on DOMContentLoaded (activate default #converter tab, handle deep links)
+- [x] **T006** Create `js/shared.js` - Extract LRU cache class from `demo.js` (conversionCache → reusable LRUCache class, 120 max entries)
+- [x] **T007** Add debounce utility to `js/shared.js` - Extract from `demo.js` setTimeout pattern (150ms typing, 10ms paste)
+- [x] **T008** Add error handling utilities to `js/shared.js` - Extract updateStatus/handleError patterns from `demo.js`
+- [x] **T009** Create `js/router.js` - Implement hash-based routing (tab switching based on window.location.hash, default to #converter when hash is empty or invalid)
+- [x] **T010** Add sessionStorage utilities to `js/router.js` - Cross-tab forwarding (setItem/getItem with TTL, clearOnUnload event)
+- [x] **T011** Create `js/registry-loader.js` - Dynamic ESM import wrapper for 6 ur-registry packages (loadRegistryPackage(key) function)
+- [x] **T012** Initialize router in `index.html` - Add router.init() on DOMContentLoaded (activate default #converter tab, handle deep links)
 
 **Checkpoint**: Foundation ready - existing converter code can be refactored into js/converter.js
 
@@ -87,16 +87,16 @@
 
 ### Implementation for User Story 1 (Refactoring Existing Code)
 
-- [ ] **T013** [P] [US1] Create `js/converter.js` - Copy FormatConverter class from `demo.js` (lines 38-787)
-- [ ] **T014** [US1] Refactor imports in `js/converter.js` - Add qrcode@1.5.3 import, update shared.js imports (replace inline cache/debounce with imported utilities)
-- [ ] **T015** [US1] Update FormatConverter constructor in `js/converter.js` - Use LRUCache from shared.js instead of inline Map
-- [ ] **T016** [US1] Update error handling in `js/converter.js` - Replace inline updateStatus with shared.js handleError/updateStatus
-- [ ] **T017** [US1] Add console debug interface to `js/converter.js` - Implement window.$lastDecoded auto-exposure (new functionality from data-model.md)
-- [ ] **T018** [US1] Add window.$cbor namespace to `js/converter.js` - Implement inspect(), diff(), export(), findType(), listTags() methods (new from data-model.md)
-- [ ] **T019** [US1] Add "Send to Multi-UR Generator" button handler in `js/converter.js` - Forward single UR via sessionStorage to #multi-ur tab (new functionality)
-- [ ] **T020** [US1] Update `index.html` converter tab - Ensure all existing UI elements have correct IDs for js/converter.js
-- [ ] **T021** [US1] Update `index.html` script imports - Replace demo.js with js/converter.js module import
-- [ ] **T022** [US1] Test refactored converter - Verify all existing demo.js functionality works in new modular structure
+- [x] **T013** [P] [US1] Create `js/converter.js` - Copy FormatConverter class from `demo.js` (lines 38-787)
+- [x] **T014** [US1] Refactor imports in `js/converter.js` - Add qrcode@1.5.3 import, update shared.js imports (replace inline cache/debounce with imported utilities)
+- [x] **T015** [US1] Update FormatConverter constructor in `js/converter.js` - Use LRUCache from shared.js instead of inline Map
+- [x] **T016** [US1] Update error handling in `js/converter.js` - Replace inline updateStatus with shared.js handleError/updateStatus
+- [x] **T017** [US1] Add console debug interface to `js/converter.js` - Implement window.$lastDecoded auto-exposure (new functionality from data-model.md)
+- [x] **T018** [US1] Add window.$cbor namespace to `js/converter.js` - Implement inspect(), diff(), export(), findType(), listTags() methods (new from data-model.md)
+- [x] **T019** [US1] Add "Send to Multi-UR Generator" button handler in `js/converter.js` - Forward single UR via sessionStorage to #multi-ur tab (new functionality)
+- [x] **T020** [US1] Update `index.html` converter tab - Ensure all existing UI elements have correct IDs for js/converter.js
+- [x] **T021** [US1] Update `index.html` script imports - Replace demo.js with js/converter.js module import
+- [x] **T022** [US1] Test refactored converter - Verify all existing demo.js functionality works in new modular structure
 
 **Checkpoint**: User Story 1 complete - existing converter functionality preserved and enhanced with console debugging
 
