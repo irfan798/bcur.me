@@ -4,15 +4,18 @@ A client-only playground for exploring BC-UR encoding (Uniform Resources) with m
 
 ## 🎯 Project Management
 
+**This project uses Speckit specification-driven development:**
+
 **ALWAYS start by reading these planning documents:**
-1. **[PROJECT_ROADMAP.md](PROJECT_ROADMAP.md)** - High-level vision, architecture decisions, phases
-2. **[FEATURES_TODO.md](FEATURES_TODO.md)** - Current sprint, task status, progress tracking
-3. **Active Task File** - Check status in FEATURES_TODO.md, then read corresponding TASK-XXX file
+1. **Active Feature Folder** (`specs/002-bc-ur-playground/`) - Current feature specification
+2. **[spec.md](../specs/002-bc-ur-playground/spec.md)** - User stories, requirements, acceptance criteria
+3. **[tasks.md](../specs/002-bc-ur-playground/tasks.md)** - 66 implementation tasks organized by user story
+4. **[plan.md](../specs/002-bc-ur-playground/plan.md)** - Technical context, architecture decisions
 
 **Workflow:**
-- Before ANY code changes: Read the relevant TASK file completely
-- Implementation details live in TASK files, not here
-- Update FEATURES_TODO.md status after completing tasks
+- Before ANY code changes: Read the relevant section in spec.md and tasks.md
+- Implementation details live in tasks.md and plan.md, not here
+- Update tasks.md checkboxes `[ ]` → `[x]` after completing tasks
 - Follow task sequence (don't skip blocked tasks)
 
 ## 📚 Source of Truth Hierarchy
@@ -31,10 +34,11 @@ A client-only playground for exploring BC-UR encoding (Uniform Resources) with m
    - `bc-ur/src/classes/UrFountainDecoder.ts` - Multi-UR decoding patterns
    - `bc-ur/tests/` - Test cases for validation
 
-3. **Task Files** (`.github/TASK-XXX-*.md`)
-   - Detailed implementation specs for current work
-   - Code templates and examples
-   - Testing checklists
+3. **Speckit Feature Files** (`specs/002-bc-ur-playground/`)
+   - **spec.md** - User stories, functional requirements, acceptance criteria
+   - **tasks.md** - Detailed implementation tasks with code templates
+   - **plan.md** - Technical context and architecture decisions
+   - **data-model.md** - Entity relationships and validation rules
 
 4. **This File** (copilot-instructions.md)
    - Core principles and patterns only
@@ -101,14 +105,14 @@ A client-only playground for exploring BC-UR encoding (Uniform Resources) with m
 ## Implementation Workflow
 
 **Step-by-step for each task:**
-1. Read `FEATURES_TODO.md` to identify current active task
-2. Read complete TASK-XXX file for that feature
+1. Read `specs/002-bc-ur-playground/tasks.md` to identify current active task
+2. Read complete task description and acceptance criteria
 3. Consult `reference_projects/*/README.md` for API usage patterns
 4. Study reference source code for implementation examples
 5. Implement following task specifications
 6. Test per checklist in task file
-7. Update `FEATURES_TODO.md` status (🔴 TODO → 🟡 IN PROGRESS → 🟢 DONE)
-8. Document any deviations or decisions in task file
+7. Update `tasks.md` checkbox: `[ ]` → `[x]` when complete
+8. Document any deviations or decisions in task file comments
 
 ## Reference Projects Usage
 
@@ -175,7 +179,7 @@ Messages must be concise, avoid stack traces in UI, retain specific cause.
 - Pipeline visualization with directional arrows (→ forward, ← reverse)
 - Conversion caching keyed by `[rawInput, format, outputFormat, urTypeOverride, styles].join('|')`
 
-**See TASK files for implementation details of new features.**
+**See tasks.md for implementation details of new features.**
 
 ## Code Architecture
 
@@ -183,13 +187,20 @@ Messages must be concise, avoid stack traces in UI, retain specific cause.
 ```
 index.html          # Main shell with tab navigation
 demo.js            # Tab 1: FormatConverter class
-.github/           # Project planning and task tracking
+specs/             # Speckit-generated feature specifications
+  └── 002-bc-ur-playground/      # Current active feature
+      ├── spec.md                # User stories, requirements, acceptance criteria
+      ├── plan.md                # Implementation plan with tech stack
+      ├── tasks.md               # 66 dependency-ordered tasks
+      ├── research.md            # Phase 0 research output
+      ├── data-model.md          # Data entities and relationships
+      ├── quickstart.md          # Getting started guide
+      └── contracts/             # API contracts and schemas
+          └── state-schema.md
+.github/           # Project governance and workflows
   ├── copilot-instructions.md    # This file
-  ├── PROJECT_ROADMAP.md         # High-level architecture & phases
-  ├── FEATURES_TODO.md           # Task status tracker
-  ├── TASK-001-*.md              # Deployment task
-  ├── TASK-002-*.md              # Multi-tab architecture
-  └── TASK-003-*.md              # Multi-UR generator
+  ├── prompts/                   # Speckit slash command prompts
+  └── workflows/                 # GitHub Actions (CI/CD)
 reference_projects/ # Read-only library examples (not deployed)
   ├── bc-ur/                     # Primary reference for bc-ur API
   ├── ur-registry/               # Registry patterns
@@ -248,7 +259,7 @@ if (decoder.isComplete()) {
   const urString = decoder.resultUr.toString();
 }
 
-// Use UrFountainEncoder for multi-UR generation (see TASK-003)
+// Use UrFountainEncoder for multi-UR generation (see specs/002-bc-ur-playground/tasks.md Phase 5)
 const encoder = new UrFountainEncoder(ur, maxLen, minLen, firstSeq, repeatRatio);
 const parts = encoder.getAllPartsUr(0); // 0 = pure fragments, no fountain
 ```

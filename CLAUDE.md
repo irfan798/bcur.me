@@ -91,14 +91,14 @@ This project has the following Speckit commands available:
 
 ### Working with Existing Features
 
-**For features already specified in `.github/TASK-*.md` files:**
+**All features use Speckit workflow in `specs/` folder:**
 
 1. **Before ANY work:** Read `.specify/memory/constitution.md` for core principles
-2. **Check task status:** Read `.github/FEATURES_TODO.md` to identify active task
-3. **Read complete spec:** Read the corresponding `TASK-XXX-*.md` file
+2. **Find active feature:** Check latest folder in `specs/` (e.g., `specs/002-bc-ur-playground/`)
+3. **Read complete spec:** Review `spec.md`, `plan.md`, and `tasks.md` in feature folder
 4. **Consult references:** Check `reference_projects/*/README.md` for API patterns
 5. **Implement:** Follow spec requirements exactly
-6. **Update status:** Mark task as completed in `FEATURES_TODO.md`
+6. **Update status:** Check off completed tasks in `tasks.md` (change `[ ]` to `[x]`)
 
 ### Source of Truth Hierarchy
 
@@ -106,7 +106,7 @@ When conflicts arise, this is the priority order:
 1. **Reference Project READMEs** (`reference_projects/bc-ur/README.md`, etc.) - authoritative
 2. **Reference Project Source Code** (`reference_projects/*/src/`) - implementation patterns
 3. **Constitution** (`.specify/memory/constitution.md`) - governance principles (v1.1.0)
-4. **Task/Spec Files** (`.github/TASK-*.md`, `.specify/specs/*.md`) - implementation details
+4. **Feature Specs** (`specs/###-feature-name/spec.md`, `plan.md`, `tasks.md`) - implementation details
 5. **Copilot Instructions** (`.github/copilot-instructions.md`) - cross-cutting concerns
 
 **Never assume library behavior—always verify against reference implementations first.**
@@ -188,9 +188,8 @@ specs/           # Speckit-generated feature specifications (OUTPUT folder)
 
 .github/
   ├── copilot-instructions.md       # Development patterns & error standards
-  ├── FEATURES_TODO.md              # Task status tracker (legacy format)
-  ├── PROJECT_ROADMAP.md            # High-level vision
-  └── TASK-*.md                     # Feature specs (legacy - being replaced by specs/ folder)
+  ├── prompts/                      # Speckit slash command prompts
+  └── workflows/                    # GitHub Actions (CI/CD)
 
 reference_projects/                 # READ-ONLY library examples
   ├── bc-ur/                        # bc-ur API reference
@@ -207,10 +206,10 @@ reference_projects/                 # READ-ONLY library examples
 - **`.specify/templates/`** - INPUT folder with templates that Speckit uses to generate files in `specs/`
   - ✅ **Committed to git** - Templates define the structure of generated docs
 
-**Note on Task Management**: This project is transitioning from legacy `.github/TASK-*.md` files to Speckit's structured workflow. New features should use `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement` which creates files in `specs/###-feature-name/`. Existing TASK files remain valid until migrated.
+**Current Active Feature**: `specs/002-bc-ur-playground/` - Multi-tab BC-UR playground with QR features
 
 ### Planned Structure (Post-Refactor)
-After multi-tab architecture (TASK-002):
+After multi-tab architecture (specs/002-bc-ur-playground):
 ```
 js/
   ├── converter.js   # Tab 1 (current demo.js)
@@ -381,15 +380,6 @@ When you need to add implementation details that apply across all features and d
 - Check task checkboxes `[ ]` vs `[x]` to see progress
 - Current active: `specs/002-bc-ur-playground/` - Multi-tab architecture with QR features
 
-**Legacy Workflow (for existing TASK-*.md features in .github/)**
-1. Read `.github/FEATURES_TODO.md` to understand current phase
-2. Read corresponding `.github/TASK-XXX-*.md` file completely
-3. Consult `reference_projects/bc-ur/README.md` for API documentation
-4. Check `reference_projects/bc-ur/src/classes/` for implementation patterns
-5. Review `reference_projects/bc-ur/tests/` for test cases
-6. Implement following task specifications
-7. Update `FEATURES_TODO.md` status (🔴 TODO → 🟡 IN PROGRESS → 🟢 DONE)
-
 ### Modifying Conversion Pipeline
 1. Update `PIPELINE_STAGES` array in `demo.js`
 2. Add detection logic in `detectFormat()` (order matters—earlier = higher priority)
@@ -401,7 +391,7 @@ When you need to add implementation details that apply across all features and d
 1. **Evaluate need:** Can vanilla JS solve this?
 2. **Check bundle size:** Use bundlephobia.com
 3. **Verify ESM support:** Must work as ES module
-4. **Document rationale:** Update TASK file with why it's needed
+4. **Document rationale:** Update spec/plan.md with why it's needed
 5. **Pin versions:** Use exact versions in package.json and CDN imports
 
 ## Error Messaging Standards
@@ -417,7 +407,7 @@ All errors must be concise, contextual, and actionable:
 
 Messages must be concise, avoid stack traces in UI, retain specific cause.
 
-## Tab Architecture (Future - TASK-002)
+## Tab Architecture (specs/002-bc-ur-playground)
 
 **Navigation:** Hash-based routing (`#converter`, `#multi-ur`, `#scanner`, `#registry`)
 
