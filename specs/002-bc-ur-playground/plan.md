@@ -19,8 +19,8 @@ BC-UR Playground is a client-side web application for exploring Uniform Resource
   - `@ngraveio/ur-hex-string` - Hex string encoding
   - `@ngraveio/ur-sign` - Sign request/response protocols
   - `@ngraveio/ur-uuid` - UUID type
-- QR Generation: `qrcode@1.5.3` (canvas-based, alphanumeric mode support)
-- QR Scanning: `qr-scanner@1.4.2` (Web Worker, mobile-optimized)
+- QR Generation: `qrcode@1.5.3` (canvas-based with `toCanvas()`, alphanumeric mode support)
+- QR Scanning: `qr-scanner@1.4.2` (Web Worker with `returnDetailedScanResult`, mobile-optimized)
 - Delivery: ESM via CDN (esm.sh with version pinning for production)
 
 **Storage**: 

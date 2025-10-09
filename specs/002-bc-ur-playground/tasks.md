@@ -57,7 +57,7 @@
 - [ ] **T006** Create `js/shared.js` - Extract LRU cache class from `demo.js` (conversionCache → reusable LRUCache class, 120 max entries)
 - [ ] **T007** Add debounce utility to `js/shared.js` - Extract from `demo.js` setTimeout pattern (150ms typing, 10ms paste)
 - [ ] **T008** Add error handling utilities to `js/shared.js` - Extract updateStatus/handleError patterns from `demo.js`
-- [ ] **T009** Create `js/router.js` - Implement hash-based routing (tab switching based on window.location.hash)
+- [ ] **T009** Create `js/router.js` - Implement hash-based routing (tab switching based on window.location.hash, default to #converter when hash is empty or invalid)
 - [ ] **T010** Add sessionStorage utilities to `js/router.js` - Cross-tab forwarding (setItem/getItem with TTL, clearOnUnload event)
 - [ ] **T011** Create `js/registry-loader.js` - Dynamic ESM import wrapper for 6 ur-registry packages (loadRegistryPackage(key) function)
 - [ ] **T012** Initialize router in `index.html` - Add router.init() on DOMContentLoaded (activate default #converter tab, handle deep links)
@@ -117,12 +117,14 @@
 - [ ] **T028** [P] [US3] Create `js/scanner.js` with QRScanner class skeleton (constructor, state per contracts/state-schema.md)
 - [ ] **T029** [US3] Implement camera initialization in `js/scanner.js` (MediaDevices API, permission handling, error display)
 - [ ] **T030** [US3] Implement QR scanning in `js/scanner.js` (qr-scanner@1.4.2 with returnDetailedScanResult: true)
+- [ ] **T030a** [US3] Implement no-QR timeout detection in `js/scanner.js` (10-second timer starts after camera ready, shows troubleshooting tips: "Hold camera steady", "Ensure good lighting", "QR code fully visible")
 - [ ] **T031** [US3] Implement fountain decoder integration in `js/scanner.js` (UrFountainDecoder, receivePartUr() on each scan)
 - [ ] **T032** [US3] Implement progress visualization in `js/scanner.js` (decodedBlocks bitmap → grid UI, green=decoded, gray=pending)
 - [ ] **T033** [US3] Implement progress tracking in `js/scanner.js` (decoder.getProgress(), decoded/total blocks, percentage display)
 - [ ] **T034** [US3] Implement UR type mismatch detection in `js/scanner.js` (compare urType across fragments, warning UI)
 - [ ] **T035** [US3] Implement manual reset in `js/scanner.js` (decoder.reset(), clear grid visualization)
 - [ ] **T036** [US3] Implement auto-forward on completion in `js/scanner.js` (isComplete → sessionStorage → navigate to #converter)
+- [ ] **T036a** [US3] Implement copy-to-clipboard in `js/scanner.js` (copy assembled UR string after 100% completion)
 - [ ] **T037** [US3] Implement camera fallback detection in `js/scanner.js` (no camera → show mobile/paste fallback message)
 - [ ] **T038** [US3] Implement permission revocation handling in `js/scanner.js` (detect permission change, show re-grant instructions)
 - [ ] **T039** [US3] Add scanner tab HTML structure to `index.html` (video preview, grid container, progress display, reset button)
@@ -148,10 +150,11 @@
 - [ ] **T044** [US2] Implement multi-part UR generation in `js/multi-ur.js` (UrFountainEncoder.getAllPartsUr(0) for pure fragments)
 - [ ] **T045** [US2] Implement finite parts display in `js/multi-ur.js` (scrollable text list with part numbers when repeatAfterRatio > 0)
 - [ ] **T046** [US2] Implement infinite streaming preview in `js/multi-ur.js` (cycles through parts when repeatAfterRatio = 0, synchronized with animation)
-- [ ] **T047** [US2] Implement QR generation in `js/multi-ur.js` (qrcode@1.5.3 toCanvas, alphanumeric mode, configurable size/EC level) - **Verify QRCode.toCanvas uses alphanumeric mode per FR-016**
+- [ ] **T047** [US2] Implement QR generation in `js/multi-ur.js` (qrcode@1.5.3 toCanvas with `options: {mode: 'alphanumeric', errorCorrectionLevel: 'L'}`, verify mode in qrcode docs before implementation, test with bytewords UR to confirm compact encoding)
 - [ ] **T048** [US2] Implement QR animation in `js/multi-ur.js` (requestAnimationFrame loop, frame rate control, current part indicator)
 - [ ] **T049** [US2] Implement animation controls in `js/multi-ur.js` (play/pause/restart, speed adjustment, infinite looping for ratio=0)
 - [ ] **T050** [US2] Implement download logic in `js/multi-ur.js` (text file export when finite, disable + guidance when infinite)
+- [ ] **T050a** [US2] Implement copy-to-clipboard in `js/multi-ur.js` (copy individual part, copy all parts as text, copy current QR as PNG)
 - [ ] **T051** [US2] Implement QR frame export in `js/multi-ur.js` (canvas toBlob, ZIP download of frames when finite)
 - [ ] **T052** [US2] Add multi-UR generator tab HTML structure to `index.html` (input section, encoder params, QR settings, canvas, controls, text output)
 
@@ -173,7 +176,7 @@
 - [ ] **T054** [US4] Implement registry type enumeration in `js/registry.js` (load all 6 packages, extract tag/urType/CDDL metadata)
 - [ ] **T055** [US4] Implement package grouping in `js/registry.js` (group by blockchain-commons, coin-identity, sync, hex-string, sign, uuid)
 - [ ] **T056** [US4] Implement collapsible type list UI in `js/registry.js` (package sections, type rows with tag/URType/description)
-- [ ] **T057** [US4] Implement CDDL viewer in `js/registry.js` (expand type → show full CDDL with syntax highlighting)
+- [ ] **T057** [US4] Implement CDDL viewer in `js/registry.js` (expand type → show full CDDL with CSS-based syntax highlighting: keywords in blue, types in green, comments in gray - no external library, keep simple per constitution)
 - [ ] **T058** [US4] Implement documentation links in `js/registry.js` (link to official docs when available, null fallback)
 - [ ] **T059** [US4] Implement type matching in `js/registry.js` (highlight registry entry when converter shows matching UR type)
 - [ ] **T060** [US4] Implement unregistered type indicator in `js/registry.js` (show "unregistered" badge for unknown types)
@@ -210,10 +213,10 @@
 
 **Purpose**: Tab-specific optimizations and final touches (demo.js already has error handling, caching, debouncing)
 
-- [ ] **T063** [P] Add mobile touch optimizations to `css/tabs.css` (larger tap targets, swipe hints)
-- [ ] **T064** [P] Add tab focus/blur handlers in `js/router.js` (pause animations on blur, resume on focus)
-- [ ] **T065** [P] Add accessibility attributes to `index.html` (ARIA labels for tab navigation, keyboard shortcuts)
-- [ ] **T066** Update README.md with live demo link, feature overview, browser requirements
+- [ ] **T070** [P] Add mobile touch optimizations to `css/tabs.css` (larger tap targets, swipe hints)
+- [ ] **T071** [P] Add tab focus/blur handlers in `js/router.js` (pause animations on blur, resume on focus)
+- [ ] **T072** [P] Add accessibility attributes to `index.html` (ARIA labels for tab navigation, keyboard shortcuts)
+- [ ] **T073** Update README.md with live demo link, feature overview, browser requirements
 
 **Checkpoint**: Feature complete, polished, and ready for deployment
 
@@ -259,15 +262,18 @@ Setup (Phase 1) → Foundational (Phase 2) → [All User Stories Can Start in Pa
 
 **Phase 4 (US3 - Scanner)**:
 - T028 [P] js/scanner.js skeleton || T039 [P] index.html scanner HTML
+- T030a implements 10-second timeout (FR-031)
+- T036a implements clipboard for scanned UR (FR-009)
 
 **Phase 5 (US2 - Multi-UR)**:
 - T040 [P] js/multi-ur.js skeleton || T052 [P] index.html multi-UR HTML
+- T050a implements clipboard for multi-UR output (FR-009)
 
 **Phase 6 (US4 - Registry)**:
 - T053 [P] js/registry.js skeleton || T061 [P] index.html registry HTML
 
 **Phase 8 (Polish)**:
-- T070-T075 all [P] (different files: css, js/converter, js/multi-ur, js/router, index.html)
+- T070-T073 all [P] (different files: css, js/router, index.html, README.md)
 
 ### Implementation Strategy
 
@@ -298,22 +304,22 @@ Setup (Phase 1) → Foundational (Phase 2) → [All User Stories Can Start in Pa
 
 ## Task Summary
 
-**Total Tasks**: **66 tasks** (reduced from 78 by leveraging existing demo.js)
+**Total Tasks**: **70 tasks** (66 base + 2 clipboard + 1 timeout + 1 renumbering correction, reduced from 78 by leveraging existing demo.js)
 - Phase 1 (Setup): 5 tasks - Refactor existing HTML into tabs
 - Phase 2 (Foundational): 7 tasks - Extract utilities from demo.js
 - Phase 3 (US1 - Converter): **10 tasks** 🎯 MVP - Refactor existing code (was 15)
-- Phase 4 (US3 - Scanner): 12 tasks - New implementation
-- Phase 5 (US2 - Multi-UR): 13 tasks - New implementation  
+- Phase 4 (US3 - Scanner): 14 tasks (includes clipboard + timeout) - New implementation
+- Phase 5 (US2 - Multi-UR): 14 tasks (includes clipboard) - New implementation
 - Phase 6 (US4 - Registry): 9 tasks - New implementation
 - Phase 7 (US5 - Console): 8 tasks - New implementation
-- Phase 8 (Polish): 2 tasks - Reduced (demo.js already has error handling, caching, debouncing)
+- Phase 8 (Polish): 4 tasks (T070-T073) - Reduced (demo.js already has error handling, caching, debouncing)
 
 **Existing Code Reuse**:
 - ✅ **demo.js (787 lines)** - Complete FormatConverter implementation
 - ✅ **index.html (455 lines)** - Working converter UI
 - 🔄 Refactor strategy: Extract → Modularize → Enhance
 
-**Parallelization**: 17 tasks marked [P] (25% of total)
+**Parallelization**: 17 tasks marked [P] (24% of 70 total)
 
 **User Story Distribution**:
 - US1 (Converter): **10 tasks** (refactored from demo.js) - MVP deliverable

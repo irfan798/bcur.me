@@ -145,15 +145,16 @@ Developers need to dynamically create and test registry items in the browser con
 #### Multi-Part UR Generation & Animated QR (Tab 2)
 
 - **FR-011**: System MUST accept UR or hex input from converter tab or manual entry
-- **FR-012**: System MUST expose all UrFountainEncoder parameters: max fragment length (10-200, default 100), min fragment length (5-50, default 10), first sequence number (default 0), repeat after ratio (0=infinite, default 2)
+- **FR-012**: System MUST expose all UrFountainEncoder parameters: max fragment length (10-200, default 100), min fragment length (5-50, default 10), first sequence number (default 0), repeat after ratio (0=infinite loop, N=repeat entire message N times after first complete send, default 2)
 - **FR-013**: System MUST generate multi-part URs using fountain encoding with user-specified parameters
-- **FR-014**: System MUST display generated parts as scrollable text list with part numbers (1 of N, 2 of N, etc.) when repeatAfterRatio > 0, and MUST instead present a live streaming preview that cycles through parts sequentially, synchronized with animation playback, without enumerating an infinite list when repeatAfterRatio = 0
+- **FR-014**: System MUST display generated parts based on repeatAfterRatio: (a) when > 0: scrollable text list with part numbers (1 of N, 2 of N, etc.) AND enable downloads; (b) when = 0: live streaming preview synchronized with animation, disable downloads, show guidance to pick finite repeat for export
 - **FR-015**: System MUST render animated QR code on HTML canvas with configurable settings: size (200-800px, default 400), error correction (L/M/Q/H, default L), frame rate (1-30 fps, default 5)
 - **FR-016**: System MUST use alphanumeric QR encoding mode optimized for bytewords
+- **FR-016a** (Verification): Alphanumeric mode MUST be confirmed by: (1) checking qrcode@1.5.3 documentation for `options.mode` parameter, (2) testing with bytewords UR string, (3) comparing QR size with automatic mode (alphanumeric should produce smaller QR for bytewords)
 - **FR-017**: System MUST provide animation controls: play/pause, restart, speed adjustment, and maintain continuous looping when repeatAfterRatio = 0
 - **FR-018**: System MUST display current part indicator (e.g., "Part 3 of 15") overlaid on QR code
 - **FR-019**: System MUST validate fountain encoder parameters before generation (min < max, valid ranges)
-- **FR-020**: System MUST provide download options: multi-part UR text file, individual QR frames as images when repeatAfterRatio > 0, and MUST disable exports while presenting guidance to select a finite repeat when repeatAfterRatio = 0
+- **FR-020**: System MUST provide download options: multi-part UR text file, individual QR frames as PNG images (see FR-014 for repeatAfterRatio behavior)
 
 #### QR Scanner & Fountain Decoder (Tab 3)
 
@@ -193,7 +194,7 @@ Developers need to dynamically create and test registry items in the browser con
 
 - **FR-046**: System MUST work in mobile browsers (Chrome/Firefox mobile) with touch-optimized controls
 - **FR-047**: System MUST use hash-based routing for tabs (#converter, #multi-ur, #scanner, #registry)
-- **FR-048**: System MUST forward data between tabs via URL parameters and temporary session storage (cleared on page unload)
+- **FR-048**: System MUST forward data between tabs via URL parameters and temporary session storage (TTL: 1 hour, cleared on page unload via beforeunload event, max payload: 5MB per constitution privacy guard)
 - **FR-049**: System MUST debounce user inputs (typing: 150ms, paste: 10ms) to optimize performance
 - **FR-050**: System MUST cache conversion results (key: rawInput|format|outputFormat|urType|styles, max 120 items, LRU eviction)
 - **FR-051**: System MUST use bc-ur library methods exclusively (never reimplement encoding pipelines)
@@ -220,7 +221,7 @@ Developers need to dynamically create and test registry items in the browser con
 ### Measurable Outcomes
 
 - **SC-001**: Users can convert between any two formats (UR/hex/bytewords/CBOR) in under 500ms for inputs up to 10KB
-- **SC-002**: Users can scan and decode 15-frame animated QR code in under 30 seconds with mobile camera at 5fps
+- **SC-002**: Users can scan and decode 15-frame animated QR code in under 30 seconds total (including camera setup ~10s, frame scanning ~3s at 5fps, fountain decoding ~5s, multiple loop passes for redundancy)
 - **SC-003**: 95% of users successfully complete format conversion on first attempt without errors
 - **SC-004**: Developers can browse all registered types and view CDDL schemas within 3 clicks
 - **SC-005**: System correctly assembles multi-part URs with 100% accuracy when all blocks are received
@@ -243,8 +244,8 @@ Developers need to dynamically create and test registry items in the browser con
   - `@ngraveio/ur-sign` - Implementation of sign request and response protocols for various blockchains
   - `@ngraveio/ur-uuid` - UUID type implementation
   - Additional packages as listed in reference_projects/ur-registry/README.md
-- **QR code library**: Generation with alphanumeric mode support, error correction levels (L/M/Q/H), canvas output
-- **QR scanner library**: Real-time camera frame processing, QR detection and decoding (jsQR or equivalent)
+- **QR generation library**: `qrcode@1.5.3` - Canvas-based generation with alphanumeric mode support, error correction levels (L/M/Q/H)
+- **QR scanner library**: `qr-scanner@1.4.2` - Real-time camera frame processing with Web Worker support (mobile-optimized)
 - **CBOR decoder**: For diagnostic notation and commented views (cbor2 or equivalent)
 
 ### Assumptions
