@@ -79,6 +79,43 @@ class FormatConverter {
 
         this.setupEventListeners();
         this.initializeExamples();
+        
+        // Check for forwarded data from other tabs (e.g., scanner)
+        this.checkForwardedData();
+    }
+    
+    /**
+     * Check for Forwarded Data from Other Tabs
+     * 
+     * Checks sessionStorage for data forwarded from scanner or other tabs.
+     * Injects the data into input and triggers conversion.
+     */
+    checkForwardedData() {
+        try {
+            // Check for scanner forwarded data
+            const scannerData = sessionStorage.getItem('forward-scanner');
+            if (scannerData) {
+                const data = JSON.parse(scannerData);
+                console.log('[Converter] Received forwarded data from scanner:', data);
+                
+                // Set input value
+                this.inputElement.value = data.ur;
+                
+                // Set input format to UR
+                this.inputFormatElement.value = 'ur';
+                
+                // Set output format to decoded-js (Decoded CBOR JavaScript)
+                this.outputFormatElement.value = 'decoded-js';
+                
+                // Clear the forwarded data (consume it)
+                sessionStorage.removeItem('forward-scanner');
+                
+                // Trigger conversion
+                this.handleConversion();
+            }
+        } catch (error) {
+            console.error('[Converter] Failed to process forwarded data:', error);
+        }
     }
 
     /**
@@ -1075,9 +1112,24 @@ class FormatConverter {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         window.converter = new FormatConverter();
+        setupConverterTabListener();
     });
 } else {
     window.converter = new FormatConverter();
+    setupConverterTabListener();
+}
+
+// Listen for tab activation to check for forwarded data
+function setupConverterTabListener() {
+    window.addEventListener('hashchange', () => {
+        const hash = window.location.hash.slice(1);
+        if (hash === 'converter' || hash === '') {
+            // Converter tab activated - check for forwarded data
+            if (window.converter) {
+                window.converter.checkForwardedData();
+            }
+        }
+    });
 }
 
 // Export for testing

@@ -38,14 +38,12 @@ yarn dev
 Alternatively, serve with any static server:
 
 ```bash
-# Python
-python3 -m http.server 8000
+# Recommended: yarn dev (checks if port is free first)
+yarn dev
 
-# Node.js (npx)
-npx serve
+# Check if server is already running
+lsof -ti:8000  # If returns PID, server is running
 
-# PHP
-php -S localhost:8000
 ```
 
 Then open `http://localhost:8000` in your browser.

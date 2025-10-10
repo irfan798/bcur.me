@@ -310,11 +310,15 @@ const parts = encoder.getAllPartsUr(0); // 0 = pure fragments, no fountain
 
 ## Quick Start (Development)
 
+**IMPORTANT**: Always check if server is running before starting a new one.
+
 Serve locally:
 ```bash
-python3 -m http.server 8000
-# or
-npx live-server
+# ALWAYS use yarn dev (checks if port is free first)
+yarn dev
+
+# Check if already running:
+lsof -ti:8000  # If returns PID, server is running
 ```
 
 Browser requirements: ES modules, Clipboard API, CSS Grid

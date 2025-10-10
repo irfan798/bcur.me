@@ -114,20 +114,20 @@
 
 ### Implementation for User Story 3
 
-- [ ] **T028** [P] [US3] Create `js/scanner.js` with QRScanner class skeleton (constructor, state per contracts/state-schema.md)
-- [ ] **T029** [US3] Implement camera initialization in `js/scanner.js` (MediaDevices API, permission handling, error display)
-- [ ] **T030** [US3] Implement QR scanning in `js/scanner.js` (qr-scanner@1.4.2 with returnDetailedScanResult: true)
-- [ ] **T030a** [US3] Implement no-QR timeout detection in `js/scanner.js` (10-second timer starts after camera ready, shows troubleshooting tips: "Hold camera steady", "Ensure good lighting", "QR code fully visible")
-- [ ] **T031** [US3] Implement fountain decoder integration in `js/scanner.js` (UrFountainDecoder, receivePartUr() on each scan)
-- [ ] **T032** [US3] Implement progress visualization in `js/scanner.js` (decodedBlocks bitmap → grid UI, green=decoded, gray=pending)
-- [ ] **T033** [US3] Implement progress tracking in `js/scanner.js` (decoder.getProgress(), decoded/total blocks, percentage display)
-- [ ] **T034** [US3] Implement UR type mismatch detection in `js/scanner.js` (compare urType across fragments, warning UI)
-- [ ] **T035** [US3] Implement manual reset in `js/scanner.js` (decoder.reset(), clear grid visualization)
-- [ ] **T036** [US3] Implement auto-forward on completion in `js/scanner.js` (isComplete → sessionStorage → navigate to #converter)
-- [ ] **T036a** [US3] Implement copy-to-clipboard in `js/scanner.js` (copy assembled UR string after 100% completion)
-- [ ] **T037** [US3] Implement camera fallback detection in `js/scanner.js` (no camera → show mobile/paste fallback message)
-- [ ] **T038** [US3] Implement permission revocation handling in `js/scanner.js` (detect permission change, show re-grant instructions)
-- [ ] **T039** [US3] Add scanner tab HTML structure to `index.html` (video preview, grid container, progress display, reset button)
+- [x] **T028** [P] [US3] Create `js/scanner.js` with QRScanner class skeleton (constructor, state per contracts/state-schema.md)
+- [x] **T029** [US3] Implement camera initialization in `js/scanner.js` (MediaDevices API, permission handling, error display)
+- [x] **T030** [US3] Implement QR scanning in `js/scanner.js` (qr-scanner@1.4.2 with returnDetailedScanResult: true)
+- [x] **T030a** [US3] Implement no-QR timeout detection in `js/scanner.js` (10-second timer starts after camera ready, shows troubleshooting tips: "Hold camera steady", "Ensure good lighting", "QR code fully visible")
+- [x] **T031** [US3] Implement fountain decoder integration in `js/scanner.js` (UrFountainDecoder, receivePartUr() on each scan)
+- [x] **T032** [US3] Implement progress visualization in `js/scanner.js` (decodedBlocks bitmap → grid UI, green=decoded, gray=pending)
+- [x] **T033** [US3] Implement progress tracking in `js/scanner.js` (decoder.getProgress(), decoded/total blocks, percentage display)
+- [x] **T034** [US3] Implement UR type mismatch detection in `js/scanner.js` (compare urType across fragments, warning UI)
+- [x] **T035** [US3] Implement manual reset in `js/scanner.js` (decoder.reset(), clear grid visualization)
+- [x] **T036** [US3] Implement auto-forward on completion in `js/scanner.js` (isComplete → sessionStorage → navigate to #converter)
+- [x] **T036a** [US3] Implement copy-to-clipboard in `js/scanner.js` (copy assembled UR string after 100% completion)
+- [x] **T037** [US3] Implement camera fallback detection in `js/scanner.js` (no camera → show mobile/paste fallback message)
+- [x] **T038** [US3] Implement permission revocation handling in `js/scanner.js` (detect permission change, show re-grant instructions)
+- [x] **T039** [US3] Add scanner tab HTML structure to `index.html` (video preview, grid container, progress display, reset button)
 
 **Checkpoint**: User Story 3 complete - QR scanning fully functional on mobile, auto-forwards to US1 converter
 

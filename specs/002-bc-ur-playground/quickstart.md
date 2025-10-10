@@ -24,14 +24,11 @@
 
 2. **Serve locally** (HTTPS required for camera):
    ```bash
-   # Python 3
-   python3 -m http.server 8000
+   # ALWAYS use yarn dev (checks if port is free first)
+   yarn dev
    
-   # Or Node.js
-   npx http-server -p 8000
-   
-   # Or live-server (auto-reload)
-   npx live-server --port=8000
+   # Check if already running:
+   lsof -ti:8000  # If returns PID, server is running
    ```
 
 3. **Open browser**:

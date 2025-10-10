@@ -333,7 +333,7 @@ This folder contains cross-cutting implementation specifications that apply to t
 - **development-setup.md**: Defines development vs production environment configurations
   - Environment separation (dev: local packages, prod: CDN imports)
   - Import strategies (import maps, conditional imports, build script swap)
-  - Local development server options (live-server, Python, npx)
+  - Local development server (ALWAYS use `yarn dev`, never Python/npx http-server)
   - Dependency management (version pinning, ESM requirements)
   - Build tools decision framework (when to add Rollup)
   - Browser testing requirements (Chrome 90+, Firefox 88+, Safari 14+)

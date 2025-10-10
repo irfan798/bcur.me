@@ -134,15 +134,20 @@ Create `index.dev.html` and `index.prod.html`, copy during deployment:
 }
 ```
 
-**Manual Options:**
+**IMPORTANT**: Always check if server is running before starting a new one:
 ```bash
-# Python
-python3 -m http.server 8000
+# Check if port 8000 is in use
+lsof -ti:8000  # If returns PID, server is running
 
-# Node.js alternatives
+# ALWAYS use yarn dev (preferred - checks port automatically)
+yarn dev
+
+# Manual alternatives (not recommended)
 npx serve
 npx http-server
 ```
+
+**Never use Python's http.server** - it was removed from all documentation in favor of `yarn dev`.
 
 ---
 

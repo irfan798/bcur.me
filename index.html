@@ -140,10 +140,98 @@
             <p style="color: #586069; text-align: center; padding: 40px;">Coming soon: Generate fountain-encoded multi-part URs with animated QR codes</p>
         </div>
 
-        <!-- Tab 3: QR Scanner (placeholder) -->
+        <!-- Tab 3: QR Scanner -->
         <div class="tab-content hidden" id="scanner-tab">
-            <div class="section-label">QR Scanner</div>
-            <p style="color: #586069; text-align: center; padding: 40px;">Coming soon: Scan animated QR codes with mobile camera</p>
+            <div class="section-label">📷 QR Code Scanner & Fountain Decoder</div>
+            
+            <!-- Camera Status -->
+            <div id="camera-status" class="status">Camera: Starting...</div>
+            
+            <!-- Camera Controls -->
+            <div class="scanner-controls">
+                <button id="stop-camera" class="example-btn" style="display:none;">⏹️ Stop Camera</button>
+                <button id="reset-scanner" class="example-btn" style="display:none;">🔄 Reset</button>
+                <button id="toggle-torch" class="example-btn" style="display:none;">🔦 Torch: OFF</button>
+            </div>
+            
+            <!-- Type Mismatch Warning -->
+            <div id="type-mismatch-warning" class="status error" style="display:none; margin-top:12px;"></div>
+            
+            <!-- Video Preview -->
+            <div class="scanner-preview">
+                <video id="scanner-video" playsinline></video>
+            </div>
+            
+            <!-- Progress Display -->
+            <div id="scan-progress" class="section-label" style="display:none; margin-top:16px;">
+                Waiting for first QR code...
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="progress-bar-container" style="margin-top:12px;">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            
+            <!-- Blocks Grid Visualization -->
+            <div class="section-label" style="margin-top:24px;">Block Status Grid</div>
+            <div id="blocks-grid" class="blocks-grid"></div>
+            
+            <!-- Grid Legend -->
+            <div class="grid-legend">
+                <div class="legend-item">
+                    <span class="legend-color decoded"></span>
+                    <span>Decoded (resolved)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color seen"></span>
+                    <span>Seen (mixed fragment)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color pending"></span>
+                    <span>Pending</span>
+                </div>
+            </div>
+            
+            <!-- Assembled UR Display -->
+            <div id="assembled-ur-section" style="display:none; margin-top:24px;">
+                <div class="section-label">✅ Assembled UR (Complete)</div>
+                <textarea
+                    id="assembled-ur-output"
+                    class="text-area"
+                    readonly
+                    rows="4"
+                    placeholder="Assembled UR will appear here..."
+                ></textarea>
+                <button id="copy-assembled-ur" class="example-btn" style="margin-top:8px;">📋 Copy UR</button>
+            </div>
+            
+            <!-- Troubleshooting Tips -->
+            <div id="troubleshooting-tips" class="troubleshooting" style="display:none; margin-top:24px;">
+                <strong>No QR code detected. Try:</strong>
+                <ul>
+                    <li>Hold camera steady</li>
+                    <li>Ensure good lighting</li>
+                    <li>QR code fully visible in frame</li>
+                    <li>Move camera closer/farther</li>
+                </ul>
+            </div>
+            
+            <!-- Usage Instructions -->
+            <div class="usage-instructions">
+                <div class="section-label">📝 How to Use</div>
+                <ol>
+                    <li>Camera starts automatically when you open this tab (grant permission when asked)</li>
+                    <li>Point camera at animated QR code sequence</li>
+                    <li><strong>Optimal distance:</strong> 6-12 inches (15-30cm) - QR should fill 40-60% of screen</li>
+                    <li>Tap screen to focus if QR appears blurry</li>
+                    <li>Watch progress grid fill as fragments are decoded</li>
+                    <li>Assembled UR auto-forwards to Converter tab when complete</li>
+                </ol>
+                <p><strong>Note:</strong> Camera access requires HTTPS (localhost OK for development)</p>
+                <p style="color: #586069; font-size: 0.9em; margin-top: 8px;">
+                    💡 <strong>Tip:</strong> If scanning fails, try moving camera closer/farther or adjusting lighting
+                </p>
+            </div>
         </div>
 
         <!-- Tab 4: Registry Browser (placeholder) -->
@@ -176,5 +264,6 @@
         }
     </script>
     <script type="module" src="js/converter.js"></script>
+    <script type="module" src="js/scanner.js"></script>
 </body>
 </html>
