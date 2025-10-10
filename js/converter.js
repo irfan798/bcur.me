@@ -542,7 +542,8 @@ class FormatConverter {
             hex: 'a2626964187b646e616d65684a6f686e20446f65',
             ur: 'ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl',
             bytewords: 'oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl',
-            multiur: 'ur:crypto-psbt/1of2/lpadaxcfaxcywenbpljkhdcahkadaemeaortcxhhdmntdmaybbnyrdiyfnztdwvlhgfywtynlgolprfoycxvamdmdfhynfmpmolbbkwngyfx\nur:crypto-psbt/2of2/lpaoaxcfaxcywenbpljkhdcahkadaemeaortcxzmwkfglrsswnckurpabzpttohhlspfztdamhyrfzksnfdmutlzmhkkgmhkbdnyidfegy'
+            multiur: 'ur:crypto-psbt/1of2/lpadaxcfaxcywenbpljkhdcahkadaemeaortcxhhdmntdmaybbnyrdiyfnztdwvlhgfywtynlgolprfoycxvamdmdfhynfmpmolbbkwngyfx\nur:crypto-psbt/2of2/lpaoaxcfaxcywenbpljkhdcahkadaemeaortcxzmwkfglrsswnckurpabzpttohhlspfztdamhyrfzksnfdmutlzmhkkgmhkbdnyidfegy',
+            'detailed-account': 'ur:detailed-account/oyadtantjlotadwkaxhdclaowdverokopdinhseeroisyalksaykctjshedprnuyjyfgrovawewftyghceglrpkgamtantjooyadlocsdwykcfadykykaeykaeykionnimfd'
         };
     }
 
@@ -550,7 +551,14 @@ class FormatConverter {
         const example = this.examples[type];
         if (example) {
             this.inputElement.value = example;
-            this.inputFormatElement.value = type === 'ur' || type === 'multiur' ? type : 'auto';
+            // Set format based on example type
+            if (type === 'multiur') {
+                this.inputFormatElement.value = 'multiur';
+            } else if (type === 'ur' || type === 'detailed-account') {
+                this.inputFormatElement.value = 'ur';
+            } else {
+                this.inputFormatElement.value = 'auto';
+            }
             this.handleConversion();
         }
     }
@@ -654,6 +662,12 @@ class FormatConverter {
             this.outputElement.value = cached.output;
             this.simplePipelineViz(detected, outputFormat, cached.pipelineStatus === 'error');
             this.updateUrTypeUI(cached.urTypeUI || { visible: false });
+            
+            // Expose to console if decoded-js format and we have cached decoded value
+            if (outputFormat === 'decoded-js' && cached.decodedValue && cached.hex) {
+                this.exposeToConsole(cached.decodedValue, detected, cached.usedUrType, cached.hex);
+            }
+            
             updateStatus(this.statusElement, 'Conversion successful (cached)', 'success');
             return;
         }
@@ -681,7 +695,14 @@ class FormatConverter {
                 disabled: !!registryResolved
             } : { visible: false };
 
-            this.conversionCache.set(cacheKey, { output, pipelineStatus: 'success', urTypeUI });
+            this.conversionCache.set(cacheKey, { 
+                output, 
+                pipelineStatus: 'success', 
+                urTypeUI,
+                decodedValue,
+                hex,
+                usedUrType
+            });
 
             this.outputElement.value = output;
             this.simplePipelineViz(detected, outputFormat, false);
