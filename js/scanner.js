@@ -99,6 +99,7 @@ export class QRScanner {
       // Auto-start camera when tab is activated
       await this.startCamera();
     } catch (error) {
+      console.error('[QRScanner] Initialization error:', error);
       handleError(error, this.container, 'Scanner initialization failed');
     }
   }
@@ -171,19 +172,19 @@ export class QRScanner {
             highlightCodeOutline: true,
             preferredCamera: 'environment', // Use back camera on mobile
             // Reduce scan rate for better processing per frame
-            maxScansPerSecond: 5,
+            // maxScansPerSecond: 5,
             // Increase resolution for better QR detection (especially for high-density QR codes)
-            // calculateScanRegion: (video) => {
-            //   // Use full video region for scanning with higher resolution
-            //   return {
-            //     x: 0,
-            //     y: 0,
-            //     width: video.videoWidth,
-            //     height: video.videoHeight,
-            //     downScaledWidth: 1280, // Higher resolution for better QR detection
-            //     downScaledHeight: 720   // (was 640x480, now 1280x720)
-            //   };
-            // }
+            calculateScanRegion: (video) => {
+              // Use full video region for scanning with higher resolution
+              return {
+                x: 0,
+                y: 0,
+                width: video.videoWidth,
+                height: video.videoHeight,
+                downScaledWidth: 1280, // Higher resolution for better QR detection
+                downScaledHeight: 720   // (was 640x480, now 1280x720)
+              };
+            }
           }
         );
       }
@@ -380,12 +381,15 @@ export class QRScanner {
     // Update UI
     this.updateUI();
     
-    // Show success message
-    updateStatus(
-      this.container,
-      `Successfully assembled multi-part UR (${this.state.decoder.expectedBlockCount} parts)`,
-      'success'
-    );
+    // Show success message in camera status element (not container!)
+    const statusElement = this.container.querySelector('#camera-status');
+    if (statusElement) {
+      updateStatus(
+        statusElement,
+        `Successfully assembled ${this.state.decoder.expectedBlockCount}-part UR!`,
+        'success'
+      );
+    }
     
     // Auto-forward to converter (via sessionStorage)
     try {
@@ -398,7 +402,7 @@ export class QRScanner {
       // Navigate to converter tab
       setTimeout(() => {
         window.location.hash = '#converter';
-      }, 1500); // 1.5s delay to show success message
+      }, 500); // 0.5s delay to show success message
     } catch (error) {
       console.error('[QRScanner] Forward failed:', error);
       this.showError('Failed to forward UR to converter');
@@ -517,6 +521,18 @@ export class QRScanner {
    * Update UI based on current state
    */
   updateUI() {
+    // Guard: Don't update UI if container doesn't exist or isn't visible
+    if (!this.container || !document.body.contains(this.container)) {
+      console.warn('[QRScanner] updateUI() called but container not in DOM - skipping');
+      return;
+    }
+    
+    // Guard: Don't update UI if scanner tab is not active
+    if (this.container.classList.contains('hidden')) {
+      console.warn('[QRScanner] updateUI() called but tab is hidden - skipping');
+      return;
+    }
+    
     // Update camera status
     this.updateCameraStatus();
     
@@ -738,7 +754,8 @@ export class QRScanner {
     
     // Destroy scanner
     if (this.scanner) {
-      this.scanner.destroy();
+      this.scanner.stop();
+      //this.scanner.destroy();
       this.scanner = null;
     }
   }
@@ -766,16 +783,26 @@ function handleHashChange() {
   const scannerTab = document.getElementById('scanner-tab');
   
   if (hash === 'scanner' && scannerTab) {
-    // Tab activated - wait for DOM to be ready before initializing
-    // Use requestAnimationFrame to ensure tab visibility transition completes
-    requestAnimationFrame(() => {
-      if (!scannerInstance) {
-        scannerInstance = new QRScanner();
+    // Tab activated - wait for tab to be fully visible before initializing
+    // Small delay to ensure CSS transitions and DOM updates complete
+    setTimeout(() => {
+      // Verify tab is actually visible before initializing
+      if (scannerTab && !scannerTab.classList.contains('hidden')) {
+        if (!scannerInstance) {
+          scannerInstance = new QRScanner();
+        }
+        scannerInstance.init(scannerTab);
+      } else {
+        // Retry once after another small delay if tab not visible yet
+        setTimeout(() => {
+          if (scannerTab && !scannerTab.classList.contains('hidden')) {
+            if (!scannerInstance) {
+              scannerInstance = new QRScanner();
+            }
+            scannerInstance.init(scannerTab);
+          }
+        }, 100);
       }
-      scannerInstance.init(scannerTab);
-    });
-  } else if (scannerInstance) {
-    // Tab deactivated - cleanup scanner
-    scannerInstance.destroy();
+    }, 50);
   }
 }

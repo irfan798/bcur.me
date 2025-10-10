@@ -580,7 +580,8 @@ class FormatConverter {
             ur: 'ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl',
             bytewords: 'oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl',
             multiur: 'ur:crypto-psbt/1of2/lpadaxcfaxcywenbpljkhdcahkadaemeaortcxhhdmntdmaybbnyrdiyfnztdwvlhgfywtynlgolprfoycxvamdmdfhynfmpmolbbkwngyfx\nur:crypto-psbt/2of2/lpaoaxcfaxcywenbpljkhdcahkadaemeaortcxzmwkfglrsswnckurpabzpttohhlspfztdamhyrfzksnfdmutlzmhkkgmhkbdnyidfegy',
-            'detailed-account': 'ur:detailed-account/oyadtantjlotadwkaxhdclaowdverokopdinhseeroisyalksaykctjshedprnuyjyfgrovawewftyghceglrpkgamtantjooyadlocsdwykcfadykykaeykaeykionnimfd'
+            'detailed-account': 'ur:detailed-account/oyadtantjlotadwkaxhdclaowdverokopdinhseeroisyalksaykctjshedprnuyjyfgrovawewftyghceglrpkgamtantjooyadlocsdwykcfadykykaeykaeykionnimfd',
+            'portfolio': 'ur:portfolio/oeadlrtaoyrkoeadtaoyrhoeadayaocsfnaolytaoyrdoeadtantjlonadwkaxhdclaxdaaxtsuooxzmahmwwtfzgthfcslpfwoylgmnatlrfyeheestcmchluselynsfstyaahdcxtdqdinaeesjzmolfzsbbidlpiyhddlcximhltirfsptlvsmohscsamsgzoaxadwtamtantjooyadlncsdwykcsfnykaeykattantjooyadlraewklawkaolytaadatghnbroinmeswclluensettntgedmnnpftoenamwmfdtaoyrkoeadtaoyrhoeadayaocfadykaolytaoyrdoeadtantjlotadwkaxhdclaowdverokopdinhseeroisyalksaykctjshedprnuyjyfgrovawewftyghceglrpkgamtantjooyadlncsdwykcfadykykaeykaolyksdwfegdimfghgieieecfpkpiyjsgugujsihgteyjsglehksknkkidhsjofxetfleektfeflfljehtktkkghfyjyehkotaoyrkoeadtaoyrhotadayaocsfnaxlycsldaolytaoyrdoeadtantjlonadwkaxhdclaxdaaxtsuooxzmahmwwtfzgthfcslpfwoylgmnatlrfyeheestcmchluselynsfstyaahdcxtdqdinaeesjzmolfzsbbidlpiyhddlcximhltirfsptlvsmohscsamsgzoaxadwtamtantjooyadlncsdwykcsfnykaeykattantjooyadlraewkadwkaolytaadatghdimerfoywzuefghswelootbnnlosptfynypdfpjytaoyrkoeadtaoyrhoeadayaoaeaolytaoyrdoyadtantjyoeadioktjeisdefzdydtaolytantjlonadwkaxhdclaxwmfmdeiamecsdsemgtvsjzcncygrkowtrontzschgezokstswkkscfmklrtauteyaahdcxiehfonurdppfyntapejpproypegrdawkgmaewejlsfdtsrfybdehcaflmtrlbdhpamtantjooyadlncsdwykaeykaeykattantjooyadlraewkaewkaotaoyrfoxadgdbgeehfksbgeehfksaotaaagwotadcyjsaoidihjtaximehdmeydmehdpehdmjpiaaajeglflgmfphffecxhtfegmgwnyfplngl',
         };
     }
 
@@ -591,7 +592,7 @@ class FormatConverter {
             // Set format based on example type
             if (type === 'multiur') {
                 this.inputFormatElement.value = 'multiur';
-            } else if (type === 'ur' || type === 'detailed-account') {
+            } else if (type === 'ur' || type === 'detailed-account' || type === 'portfolio') {
                 this.inputFormatElement.value = 'ur';
             } else {
                 this.inputFormatElement.value = 'auto';
@@ -916,13 +917,125 @@ class FormatConverter {
     }
 
     /**
+     * Pretty-print JavaScript value with CBOR-specific formatting
+     * 
+     * Formats decoded CBOR values for human readability:
+     * - Maps shown with clear key-value pairs
+     * - Uint8Array/bytes shown as hex strings
+     * - Tagged values shown with tag number
+     * - Nested structures properly indented
+     * 
+     * @param {*} value - Decoded JavaScript value
+     * @param {number} indent - Current indentation level
+     * @returns {string} Pretty-printed representation
+     */
+    prettyPrintJS(value, indent = 0) {
+        const INDENT = '  ';
+        const currentIndent = INDENT.repeat(indent);
+        const nextIndent = INDENT.repeat(indent + 1);
+
+        // Handle null/undefined
+        if (value === null) return 'null';
+        if (value === undefined) return 'undefined';
+
+        // Handle primitives
+        if (typeof value === 'string') return JSON.stringify(value);
+        if (typeof value === 'number') return String(value);
+        if (typeof value === 'boolean') return String(value);
+
+        // Handle Uint8Array (bytes) - convert to hex string
+        if (value instanceof Uint8Array) {
+            const hex = Array.from(value)
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+            return `Bytes(0x${hex})`;
+        }
+
+        // Handle ArrayBuffer
+        if (value instanceof ArrayBuffer) {
+            const bytes = new Uint8Array(value);
+            const hex = Array.from(bytes)
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+            return `Bytes(0x${hex})`;
+        }
+
+        // Handle Map
+        if (value instanceof Map) {
+            if (value.size === 0) return 'Map {}';
+            
+            const entries = Array.from(value.entries()).map(([key, val]) => {
+                const keyStr = this.prettyPrintJS(key, indent + 1);
+                const valStr = this.prettyPrintJS(val, indent + 1);
+                return `${nextIndent}${keyStr} => ${valStr}`;
+            });
+            
+            return `Map {\n${entries.join(',\n')}\n${currentIndent}}`;
+        }
+
+        // Handle Set
+        if (value instanceof Set) {
+            if (value.size === 0) return 'Set {}';
+            
+            const items = Array.from(value).map(item => {
+                return `${nextIndent}${this.prettyPrintJS(item, indent + 1)}`;
+            });
+            
+            return `Set {\n${items.join(',\n')}\n${currentIndent}}`;
+        }
+
+        // Handle Array
+        if (Array.isArray(value)) {
+            if (value.length === 0) return '[]';
+            
+            const items = value.map(item => {
+                return `${nextIndent}${this.prettyPrintJS(item, indent + 1)}`;
+            });
+            
+            return `[\n${items.join(',\n')}\n${currentIndent}]`;
+        }
+
+        // Handle CBOR Tagged values (objects with 'tag' and 'contents' properties)
+        if (value && typeof value === 'object' && 'tag' in value && 'contents' in value) {
+            const tagStr = `Tag(${value.tag})`;
+            const contentsStr = this.prettyPrintJS(value.contents, indent + 1);
+            
+            // Single-line for simple contents
+            if (value.contents === null || value.contents === undefined || 
+                typeof value.contents === 'string' || typeof value.contents === 'number' ||
+                typeof value.contents === 'boolean') {
+                return `${tagStr} ${contentsStr}`;
+            }
+            
+            return `${tagStr} ${contentsStr}`;
+        }
+
+        // Handle plain objects
+        if (typeof value === 'object') {
+            const keys = Object.keys(value);
+            if (keys.length === 0) return '{}';
+            
+            const pairs = keys.map(key => {
+                const val = value[key];
+                const valStr = this.prettyPrintJS(val, indent + 1);
+                return `${nextIndent}${JSON.stringify(key)}: ${valStr}`;
+            });
+            
+            return `{\n${pairs.join(',\n')}\n${currentIndent}}`;
+        }
+
+        // Fallback
+        return String(value);
+    }
+
+    /**
      * Decode CBOR to Various Formats
      *
      * Converts CBOR-encoded hex string to one of 4 output formats:
      * 1. decoded-json: Pretty-printed JSON (default)
      * 2. decoded-diagnostic: CBOR diagnostic notation
      * 3. decoded-commented: Diagnostic with comments
-     * 4. decoded-js: JavaScript object representation
+     * 4. decoded-js: JavaScript object representation (custom pretty-print)
      */
     decodeCBOR(hexInput, format = 'decoded-json') {
         try {
@@ -933,7 +1046,9 @@ class FormatConverter {
             } else if (format === 'decoded-commented') {
                 return comment(bytes);
             } else if (format === 'decoded-js') {
-                return comment(bytes, { format: 'js' });
+                // Use custom pretty-printer for JavaScript representation
+                const decoded = UR.pipeline.decode(hexInput, { from: 'hex' });
+                return this.prettyPrintJS(decoded, 0);
             } else {
                 // Default: JSON format (decoded-json)
                 const decoded = UR.pipeline.decode(hexInput, { from: 'hex' });
