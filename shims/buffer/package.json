@@ -1,0 +1,5 @@
+{
+  "name": "buffer-shim",
+  "type": "module",
+  "main": "./index.js"
+}

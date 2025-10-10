@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@ngraveio/bc-ur": "https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9",
+    "qrcode": "https://esm.sh/qrcode@1.5.3",
+    "qr-scanner": "https://esm.sh/qr-scanner@1.4.2"
+  }
+}

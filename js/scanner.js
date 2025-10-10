@@ -13,8 +13,8 @@
  * - Auto-forward to converter on completion
  */
 
-import { UrFountainDecoder, UR } from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9';
-import QrScanner from 'https://esm.sh/qr-scanner@1.4.2';
+import { UrFountainDecoder, UR } from '@ngraveio/bc-ur';
+import QrScanner from 'qr-scanner';
 import { handleError, updateStatus } from './shared.js';
 
 export class QRScanner {

@@ -3,9 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" 
+      content="script-src 'self' 'unsafe-eval' 'unsafe-inline' https://esm.sh blob:; worker-src 'self' blob:;">
     <title>BC-UR Playground</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/tabs.css">
+
+    <!-- Import Map: Conditional inline based on environment -->
+    <!-- Production: Update this manually or via build script to use CDN URLs -->
+    <script>
+        // Detect environment
+        const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        // Define import maps for each environment
+        const devImports = {
+            // Local bc-ur package with bundled CBOR2 (ESM version uses bundled deps)
+            "@ngraveio/bc-ur": "/node_modules/@ngraveio/bc-ur/dist/esm/index.js",
+            // bc-ur ESM dependencies (bare imports that need mapping)
+            "buffer": "https://esm.sh/buffer@6.0.3",
+            "buffer/": "https://esm.sh/buffer@6.0.3/",
+            "uint8array-extras": "/node_modules/uint8array-extras/index.js",
+            "crc": "/node_modules/crc/mjs/index.js",
+            "sha.js": "https://esm.sh/sha.js@2.4.12",
+            // QR libraries (qrcode is CommonJS, use esm.sh for auto-conversion)
+            "qrcode": "https://esm.sh/qrcode@1.5.3",
+            "qr-scanner": "/node_modules/qr-scanner/qr-scanner.min.js"
+        };
+        
+        const prodImports = {
+            "@ngraveio/bc-ur": "https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9",
+            "qrcode": "https://esm.sh/qrcode@1.5.3",
+            "qr-scanner": "https://esm.sh/qr-scanner@1.4.2"
+        };
+        
+        // Inject the appropriate import map
+        const importMap = document.createElement('script');
+        importMap.type = 'importmap';
+        importMap.textContent = JSON.stringify({
+            imports: isDev ? devImports : prodImports
+        });
+        document.currentScript.after(importMap);
+        
+        console.log(`[ImportMap] Loaded ${isDev ? 'development' : 'production'} imports`, isDev ? devImports : prodImports);
+    </script>
 </head>
 <body>
     <div class="container">

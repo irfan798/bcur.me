@@ -11,16 +11,16 @@
  * Refactored from demo.js into modular architecture for multi-tab BC-UR playground.
  */
 
-// Import BC-UR library components from CDN
+// Import BC-UR library components (via import map: dev=node_modules, prod=CDN)
 import {
     UR,                    // Core UR class for encoding/decoding
     UrFountainDecoder,     // Multi-part UR decoder
     BytewordEncoding,      // Bytewords encoder with style support
     cbor2                  // CBOR diagnostics (comment/diagnose)
-} from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9';
+} from '@ngraveio/bc-ur';
 
-// Import QR code generation library
-import QRCode from 'https://esm.sh/qrcode@1.5.3';
+// Import QR code generation library (via import map)
+import QRCode from 'qrcode';
 
 // Import shared utilities
 import { LRUCache, updateStatus, handleError, clearOutput as clearOutputUtil } from './shared.js';

@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@ngraveio/bc-ur": "/node_modules/@ngraveio/bc-ur/dist/esm/index.js",
+    "qrcode": "/node_modules/qrcode/lib/browser.js",
+    "qr-scanner": "/node_modules/qr-scanner/qr-scanner.min.js"
+  }
+}
