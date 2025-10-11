@@ -415,3 +415,139 @@
         font-size: 11px;
     }
 }
+
+/* ===== Multi-UR Generator Styles ===== */
+
+/* Mode Badge (Finite vs Infinite) */
+.mode-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.mode-badge.infinite {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.mode-badge.finite {
+    background: #e1f5e6;
+    border: 2px solid #28a745;
+    color: #0a7a25;
+}
+
+/* Encoder Blocks Visualization */
+.encoder-blocks-visualization {
+    margin-top: 12px;
+}
+
+.encoder-grid-title {
+    font-size: 13px;
+    color: #586069;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.encoder-blocks-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 8px;
+    padding: 12px;
+    background: #f6f8fa;
+    border-radius: 6px;
+}
+
+/* Parts List Styling (Finite Mode) */
+#parts-list-output {
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 12px;
+}
+
+.parts-list-header {
+    font-weight: 600;
+    font-size: 13px;
+    color: #24292e;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e1e4e8;
+}
+
+.part-item {
+    padding: 12px;
+    margin: 8px 0;
+    background: white;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.part-item:hover {
+    background: #f6f8fa;
+    border-color: #667eea;
+}
+
+.part-item.active {
+    background: #e8f0fe;
+    border-color: #667eea;
+    border-width: 2px;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+.part-number {
+    display: inline-block;
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 4px;
+    min-width: 80px;
+}
+
+.part-ur {
+    display: block;
+    word-break: break-all;
+    color: #24292e;
+    background: #f6f8fa;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+}
+
+/* QR Canvas Styling */
+#multi-ur-qr-canvas {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Export Button Special Styling */
+#export-gif:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #e1e4e8;
+}
+
+/* Mobile Optimizations for Multi-UR Generator */
+@media (max-width: 768px) {
+    .mode-badge {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    .encoder-blocks-grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+        gap: 6px;
+    }
+
+    #parts-list-output {
+        font-size: 11px;
+    }
+
+    .part-item {
+        padding: 10px;
+    }
+
+    #multi-ur-qr-canvas {
+        max-width: 90vw;
+    }
+}

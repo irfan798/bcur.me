@@ -143,20 +143,21 @@
 
 ### Implementation for User Story 2
 
-- [ ] **T040** [P] [US2] Create `js/multi-ur.js` with MultiURGenerator class skeleton (constructor, state per contracts/state-schema.md)
-- [ ] **T041** [US2] Implement input handling in `js/multi-ur.js` (receive from converter via sessionStorage, manual UR/hex entry)
-- [ ] **T042** [US2] Implement encoder parameter UI in `js/multi-ur.js` (maxFragmentLength, minFragmentLength, firstSeqNum, repeatAfterRatio)
-- [ ] **T043** [US2] Implement parameter validation in `js/multi-ur.js` (min < max, range checks, error display before encoding)
-- [ ] **T044** [US2] Implement multi-part UR generation in `js/multi-ur.js` (UrFountainEncoder.getAllPartsUr(0) for pure fragments)
-- [ ] **T045** [US2] Implement finite parts display in `js/multi-ur.js` (scrollable text list with part numbers when repeatAfterRatio > 0)
-- [ ] **T046** [US2] Implement infinite streaming preview in `js/multi-ur.js` (cycles through parts when repeatAfterRatio = 0, synchronized with animation)
-- [ ] **T047** [US2] Implement QR generation in `js/multi-ur.js` (qrcode@1.5.3 toCanvas with `options: {mode: 'alphanumeric', errorCorrectionLevel: 'L'}`, verify mode in qrcode docs before implementation, test with bytewords UR to confirm compact encoding)
-- [ ] **T048** [US2] Implement QR animation in `js/multi-ur.js` (requestAnimationFrame loop, frame rate control, current part indicator)
-- [ ] **T049** [US2] Implement animation controls in `js/multi-ur.js` (play/pause/restart, speed adjustment, infinite looping for ratio=0)
-- [ ] **T050** [US2] Implement download logic in `js/multi-ur.js` (text file export when finite, disable + guidance when infinite)
-- [ ] **T050a** [US2] Implement copy-to-clipboard in `js/multi-ur.js` (copy individual part, copy all parts as text, copy current QR as PNG)
-- [ ] **T051** [US2] Implement QR frame export in `js/multi-ur.js` (canvas toBlob, ZIP download of frames when finite)
-- [ ] **T052** [US2] Add multi-UR generator tab HTML structure to `index.html` (input section, encoder params, QR settings, canvas, controls, text output)
+- [x] **T040** [P] [US2] Create `js/multi-ur.js` with MultiURGenerator class skeleton (constructor, state per contracts/state-schema.md)
+- [x] **T041** [US2] Implement input handling in `js/multi-ur.js` (receive from converter via sessionStorage, manual UR/hex entry)
+- [x] **T042** [US2] Implement encoder parameter UI in `js/multi-ur.js` (maxFragmentLength, minFragmentLength, firstSeqNum, repeatAfterRatio)
+- [x] **T043** [US2] Implement parameter validation in `js/multi-ur.js` (min < max, range checks, error display before encoding)
+- [x] **T044** [US2] Implement multi-part UR generation in `js/multi-ur.js` (UrFountainEncoder.getAllPartsUr(0) for pure fragments)
+- [x] **T045** [US2] Implement finite parts display in `js/multi-ur.js` (scrollable text list with part numbers when repeatAfterRatio > 0)
+- [x] **T046** [US2] Implement infinite streaming preview in `js/multi-ur.js` (cycles through parts when repeatAfterRatio = 0, synchronized with animation)
+- [x] **T047** [US2] Implement QR generation in `js/multi-ur.js` (qrcode@1.5.3 toCanvas with `options: {errorCorrectionLevel: 'L'}` - alphanumeric mode auto-detected by library)
+- [x] **T048** [US2] Implement QR animation in `js/multi-ur.js` (requestAnimationFrame loop, frame rate control, current part indicator)
+- [x] **T049** [US2] Implement animation controls in `js/multi-ur.js` (play/pause/restart, speed adjustment, infinite looping for ratio=0)
+- [x] **T049a** [US2] Implement encoder blocks grid visualization in `js/multi-ur.js` (shows which original blocks each fragment contains, updates with animation)
+- [ ] **T050** [US2] ~~Implement download logic~~ REMOVED - Replaced by GIF export (T051)
+- [x] **T050a** [US2] Implement copy-to-clipboard in `js/multi-ur.js` (copy individual part, copy all parts as text, copy current QR as PNG)
+- [ ] **T051** [US2] Implement animated GIF export in `js/multi-ur.js` (using gif.js library, finite mode only, disabled with tooltip in infinite mode)
+- [x] **T052** [US2] Add multi-UR generator tab HTML structure to `index.html` (input section, encoder params, QR settings, canvas, controls, text output, encoder blocks grid)
 
 **Checkpoint**: User Story 2 complete - multi-UR generation with animated QR fully functional
 
