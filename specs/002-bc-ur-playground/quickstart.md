@@ -126,14 +126,61 @@ Production uses CDN imports with version pinning:
 
 **Pinned Versions** (as of 2025-10-08):
 - `@ngraveio/bc-ur@2.0.0-beta.9` - Core UR encoding/decoding
-- `@ngraveio/ur-blockchain-commons@latest` - BC types
-- `@ngraveio/ur-coin-identity@latest` - Coin identity
-- `@ngraveio/ur-sync@latest` - Account/portfolio types
-- `@ngraveio/ur-hex-string@latest` - Hex encoding
-- `@ngraveio/ur-sign@latest` - Sign protocols
-- `@ngraveio/ur-uuid@latest` - UUID type
+- `@ngraveio/ur-blockchain-commons@2.0.1-beta.2` - BC types (crypto-seed, crypto-hdkey, crypto-psbt, crypto-account, crypto-output, crypto-eckey)
+- `@ngraveio/ur-coin-identity@2.0.1-beta.2` - Coin identity type
+- `@ngraveio/ur-sync@2.0.1-beta.2` - Account/portfolio types (detailed-account, portfolio-coin, portfolio-metadata, portfolio)
+- `@ngraveio/ur-hex-string@2.0.1-beta.2` - Hex string encoding type
+- `@ngraveio/ur-sign@2.0.1-beta.2` - Sign protocols (sign-request, sign-response)
+- `@ngraveio/ur-uuid@2.0.1-beta.2` - UUID type
 - `qrcode@1.5.3` - QR code generation (canvas-based)
 - `qr-scanner@1.4.2` - QR code scanning (Web Worker)
+
+---
+
+## Supported Registry Types
+
+The converter automatically decodes registered UR types into typed class instances with expandable property inspection and console access.
+
+### Package: @ngraveio/ur-blockchain-commons
+- **crypto-seed** - BIP39 mnemonic seed with optional name/creation date
+- **crypto-hdkey** - Hierarchical deterministic key with derivation path
+- **crypto-psbt** - Partially Signed Bitcoin Transaction
+- **crypto-account** - Bitcoin account descriptor with master fingerprint
+- **crypto-output** - Output descriptor (script type + key)
+- **crypto-eckey** - Elliptic curve key (private or public)
+
+### Package: @ngraveio/ur-coin-identity
+- **coin-identity** - Unique coin identifier (blockchain + network + asset)
+
+### Package: @ngraveio/ur-sync
+- **detailed-account** - Full account details with output descriptors
+- **portfolio-coin** - Coin portfolio entry with holdings
+- **portfolio-metadata** - Portfolio metadata (name, version)
+- **portfolio** - Complete portfolio with multiple coins
+
+### Package: @ngraveio/ur-hex-string
+- **hex-string** - Plain hex string encoding
+
+### Package: @ngraveio/ur-sign
+- **sign-request** - Signing request with payload and metadata
+- **sign-response** - Signing response with signature
+
+### Package: @ngraveio/ur-uuid
+- **uuid** - UUID identifier
+
+**Usage Example**:
+```javascript
+// Paste UR in converter:
+// ur:detailed-account/oeadtpdagdaolftaaddyoeadlocsdyykaeykaeykaoykaocyemgwkelbaeaehnax...
+
+// Output view: Select "Registry Item"
+// Shows: DetailedAccount class with expandable properties
+
+// Console access:
+window.$lastRegistryItem instanceof DetailedAccount // true
+window.$lastRegistryItem.device                     // "Ngrave ZERO"
+window.$lastRegistryItem.encode()                   // Returns original UR string
+```
 
 ---
 
@@ -379,6 +426,88 @@ const urSync = await loadRegistryPackage('sync');
 import * as allPackages from './all-registry-packages.js';
 ```
 
+### 5. Registry Item Decoding
+
+✅ **DO**:
+```javascript
+// converter.js - Decode CBOR to Registry Item
+async decodeToRegistryItem(decodedCbor, urType) {
+  try {
+    // Load appropriate registry package
+    const { loadRegistryPackage } = await import('./registry-loader.js');
+    const packageKey = this.getPackageKeyForType(urType); // Maps type to package
+    const module = await loadRegistryPackage(packageKey);
+    
+    // Decode using library's fromDataItem
+    const registryItem = module.fromDataItem(decodedCbor);
+    
+    // Expose to console
+    window.$lastRegistryItem = registryItem;
+    window.$lastDecoded = decodedCbor; // Preserve raw CBOR
+    
+    return { registryItem, error: null };
+  } catch (err) {
+    // Silent fallback to CBOR views
+    console.warn(`Registry Item decode failed: ${err.message}`);
+    return { registryItem: null, error: err.message };
+  }
+}
+
+// Render expandable tree view (DevTools-style)
+renderRegistryItemView(registryItem, container) {
+  const tree = this.createTreeNode(
+    registryItem.constructor.name, // e.g., "DetailedAccount"
+    'class',
+    registryItem
+  );
+  
+  // Show common methods
+  const methods = ['encode', 'getCbor', 'toDataItem'];
+  // Toggle for type-specific methods
+  
+  container.appendChild(tree);
+}
+```
+
+**Type to Package Mapping** (getPackageKeyForType):
+```javascript
+const typeToPackage = {
+  'crypto-seed': 'blockchain-commons',
+  'crypto-hdkey': 'blockchain-commons',
+  'crypto-psbt': 'blockchain-commons',
+  'detailed-account': 'sync',
+  'portfolio': 'sync',
+  'coin-identity': 'coin-identity',
+  'hex-string': 'hex-string',
+  'sign-request': 'sign',
+  'uuid': 'uuid'
+};
+```
+
+❌ **DON'T**:
+```javascript
+// Manual class reconstruction (WRONG - library does this)
+function reconstructRegistryItem(cbor, type) {
+  const obj = {};
+  // ... manual property extraction
+  return obj;
+}
+
+// Blocking preload (WRONG - slow initial load)
+await loadAllRegistryPackages(); // Blocks page load
+initApp();
+```
+
+✅ **DO** (Background Preload):
+```javascript
+// converter.js constructor
+async preloadRegistryPackages() {
+  const { preloadPackages } = await import('./registry-loader.js');
+  preloadPackages(); // Non-blocking, returns immediately
+  console.log('Registry packages preloading in background');
+}
+```
+
 ---
 
 ## Debugging Tips
@@ -388,6 +517,12 @@ import * as allPackages from './all-registry-packages.js';
 Open browser DevTools console:
 
 ```javascript
+// Access decoded Registry Items (Tab 1 - Converter)
+window.$lastRegistryItem           // Typed class instance (e.g., DetailedAccount)
+window.$lastRegistryItem.encode()  // Returns UR string
+window.$lastRegistryItem.getCbor() // Returns CBOR bytes
+window.$lastDecoded                // Raw CBOR DataItem (always available)
+
 // Access window.registryPlayground (Tab 4 - Registry)
 window.registryPlayground.createItem('crypto-seed', {
   // ... seed data
@@ -399,6 +534,47 @@ decoder.getProgress() // 0.666...
 
 // Inspect conversion cache (Tab 1 - Converter)
 converter.cache.cache // Map of cached results
+
+// Check registry package loading
+import { getPackageInfo } from './js/registry-loader.js';
+getPackageInfo('sync') // { loaded: true, loadedAt: timestamp, ... }
+```
+
+### 2. Registry Item Inspection
+
+When decoding a registered UR type (e.g., `ur:detailed-account/...`):
+
+**Expandable Tree View** (in UI):
+```
+DetailedAccount {
+  ▶ masterFingerprint: Uint8Array(33)
+  ▶ outputDescriptors: Array(1)
+  ▶ device: "Ngrave ZERO"
+}
+
+Methods:
+  encode()        [common]
+  getCbor()       [common]
+  toDataItem()    [common]
+  [Show type-specific methods] ← click to expand
+```
+
+**Console Interaction**:
+```javascript
+// After decoding detailed-account
+const item = window.$lastRegistryItem;
+
+// Re-encode to UR
+const urString = item.encode();
+console.log(urString); // "ur:detailed-account/..."
+
+// Get CBOR hex
+const cbor = item.getCbor();
+console.log(cbor.toString('hex'));
+
+// Compare with raw CBOR
+const raw = window.$lastDecoded;
+console.log(raw); // DataItem with tag/value structure
 ```
 
 ### 2. Visual Pipeline Debugging
@@ -406,14 +582,23 @@ converter.cache.cache // Map of cached results
 Pipeline visualization shows conversion flow:
 
 ```
-multiur → ur → bytewords → hex → decoded
-  (gray)  (green)  (gray)  (green)  (gray)
+multiur → ur → bytewords → hex → decoded → registry-item
+  (gray)  (green)  (gray)  (green)  (gray)    (green)
 
 Legend:
 - Green: Active/success
 - Red: Error (with message)
 - Gray: Inactive
 - Arrows: Conversion direction (→ forward, ← reverse)
+```
+
+**Registry Item Decoding** (when type is registered):
+```
+hex → decoded → registry-item
+      (green)     (green)
+
+Output view: "Registry Item" selected
+Shows: Expandable tree + methods + console hint
 ```
 
 ### 3. Network Panel

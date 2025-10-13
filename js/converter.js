@@ -16,8 +16,19 @@ import {
     UR,                    // Core UR class for encoding/decoding
     UrFountainDecoder,     // Multi-part UR decoder
     BytewordEncoding,      // Bytewords encoder with style support
-    cbor2                  // CBOR diagnostics (comment/diagnose)
+    cbor2,                 // CBOR diagnostics (comment/diagnose)
+    isRegistryItem,        // Registry item type guard
+    UrRegistry             // Registry singleton for looking up classes
 } from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9';
+
+// Import UR Registry packages - these auto-register types on import
+// Each package's addToRegistry.js/ts runs automatically via side effects
+import * as blockchainCommons from 'https://esm.sh/@ngraveio/ur-blockchain-commons@2.0.1-beta.2';
+import * as coinIdentity from 'https://esm.sh/@ngraveio/ur-coin-identity@2.0.1-beta.2';
+import * as urSync from 'https://esm.sh/@ngraveio/ur-sync@2.0.1-beta.2';
+import * as hexString from 'https://esm.sh/@ngraveio/ur-hex-string@2.0.1-beta.2';
+import * as urSign from 'https://esm.sh/@ngraveio/ur-sign@2.0.1-beta.2';
+import * as urUuid from 'https://esm.sh/@ngraveio/ur-uuid@2.0.1-beta.2';
 
 // Import QR code generation library
 import QRCode from 'https://esm.sh/qrcode@1.5.3';
@@ -27,6 +38,27 @@ import { LRUCache, updateStatus, handleError, clearOutput as clearOutputUtil } f
 
 // Extract cbor2 functions for CBOR diagnostic output
 const { comment, diagnose } = cbor2;
+
+// Log registry package loading status
+console.log('%c[Registry] Loading UR Registry Packages', 'font-weight: bold; color: #2196F3');
+console.log('  ✓ blockchain-commons:', blockchainCommons ? 'loaded' : 'failed');
+console.log('  ✓ coin-identity:', coinIdentity ? 'loaded' : 'failed');
+console.log('  ✓ ur-sync:', urSync ? 'loaded' : 'failed');
+console.log('  ✓ hex-string:', hexString ? 'loaded' : 'failed');
+console.log('  ✓ ur-sign:', urSign ? 'loaded' : 'failed');
+console.log('  ✓ ur-uuid:', urUuid ? 'loaded' : 'failed');
+
+// Make registry packages available globally for debugging
+window.registryPackages = {
+    blockchainCommons,
+    coinIdentity,
+    urSync,
+    hexString,
+    urSign,
+    urUuid
+};
+
+console.log('%c[Registry] Packages available in window.registryPackages', 'color: #4CAF50');
 
 // Canonical ordered stages for pipeline visualization
 const PIPELINE_STAGES = ['multiur', 'ur', 'bytewords', 'hex', 'decoded'];
@@ -292,6 +324,10 @@ class FormatConverter {
      * @param {string} hex - CBOR hex representation
      */
     exposeToConsole(decodedValue, sourceFormat, urType, hex) {
+        // Check if it's a registry item using library function
+        const itemIsRegistryItem = isRegistryItem(decodedValue);
+        const registryItemType = itemIsRegistryItem ? decodedValue.constructor.name : null;
+        
         // Analyze structure
         const structure = this.analyzeStructure(decodedValue);
 
@@ -310,13 +346,15 @@ class FormatConverter {
             console.warn('Failed to extract CBOR tags:', e);
         }
 
-        // Determine if UR type is registered (placeholder until US4 is implemented)
-        const isRegistered = false; // TODO: Check against registry when US4 is done
-        const registryPackage = null;
+        // Determine if UR type is registered
+        const isRegistered = itemIsRegistryItem || false; // Registry item means it's registered
+        const registryPackage = null; // TODO: Determine package from type
 
         // Create exposed object
         const exposed = {
             value: decodedValue,
+            isRegistryItem: itemIsRegistryItem,
+            registryItemType: registryItemType,
             cbor: {
                 hex: hex,
                 diagnostic: diagnostic,
@@ -340,6 +378,11 @@ class FormatConverter {
 
         // Update global references
         window.$lastDecoded = exposed;
+        
+        // Also expose the raw registry item for easy access
+        if (itemIsRegistryItem) {
+            window.$lastRegistryItem = decodedValue;
+        }
 
         // Add to history (LRU, max 10)
         window.$decodedHistory.unshift(exposed);
@@ -421,12 +464,27 @@ class FormatConverter {
     logToConsole(exposed) {
         const isRegistered = exposed.ur?.isRegistered;
         const urType = exposed.ur?.type || 'unknown';
+        const isRegistryItem = exposed.isRegistryItem;
+        const registryItemType = exposed.registryItemType;
 
-        console.log(
-            `%cℹ️ Decoded CBOR (${urType})`,
-            'color: #0066cc; font-weight: bold; font-size: 14px'
-        );
+        // Enhanced header for registry items
+        if (isRegistryItem) {
+            console.log(
+                `%c🎯 Registry Item: ${registryItemType}`,
+                'color: #00cc66; font-weight: bold; font-size: 14px; background: #f0fff0; padding: 2px 6px'
+            );
+        } else {
+            console.log(
+                `%cℹ️ Decoded CBOR (${urType})`,
+                'color: #0066cc; font-weight: bold; font-size: 14px'
+            );
+        }
+        
         console.log('┌─────────────────────────────────────────────────────────────');
+
+        if (isRegistryItem) {
+            console.log(`│ 🏷️  Type: ${registryItemType} (Registry Class)`);
+        }
 
         if (exposed.ur) {
             console.log(`│ UR Type: ${urType} ${isRegistered ? '(registered ✓)' : '(not registered ⚠️)'}`);
@@ -444,12 +502,22 @@ class FormatConverter {
         console.log('│');
         console.log('│ 📋 Access via: window.$lastDecoded');
 
+        if (isRegistryItem) {
+            console.log('│ 🎯 Registry Item: window.$lastRegistryItem');
+            console.log('│    ↳ Try: window.$lastRegistryItem.getRegistryType()');
+            console.log('│    ↳ Try: window.$lastRegistryItem.toUR()');
+        }
+
         if (exposed.registry?.cddl) {
             console.log('│ 📖 CDDL: window.$lastDecoded.registry.cddl');
         }
 
         console.log('│ 🔍 Inspect: window.$cbor.inspect(window.$lastDecoded.value)');
         console.log('└─────────────────────────────────────────────────────────────');
+        
+        if (isRegistryItem) {
+            console.log(`%c${registryItemType} Instance:`, 'font-weight: bold; color: #00cc66');
+        }
         console.log('Value:', exposed.value);
     }
 
@@ -831,6 +899,30 @@ class FormatConverter {
 
         // 3. Produce target output
         if (toNorm === 'decoded') {
+            // Special handling for decoded-js: try to get registry item from UR instance first
+            if (toFormat === 'decoded-js' && urInstance) {
+                try {
+                    // Try to manually instantiate the registry item using the UR type
+                    const urType = urInstance.type;
+                    const RegistryClass = UrRegistry.queryByURType(urType);
+                    
+                    if (RegistryClass) {
+                        // Use fromHex to properly instantiate the class
+                        const registryItem = RegistryClass.fromHex(hex);
+                        
+                        // Verify it's a registry item
+                        if (isRegistryItem(registryItem)) {
+                            // It's a typed registry item! Pretty print it
+                            const rendered = this.prettyPrintJS(registryItem, 0);
+                            return { output: rendered, hex, decodedValue: registryItem, isRegistryItem: true };
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to decode to registry item, falling back to CBOR decode:', e);
+                }
+            }
+            
+            // Fall back to standard CBOR decode from hex
             const rendered = this.renderDecodedVariant(hex, toFormat);
 
             // Store decoded value if format is decoded-js
@@ -1012,8 +1104,13 @@ class FormatConverter {
 
         // Handle plain objects
         if (typeof value === 'object') {
+            const constructorName = value.constructor.name;
             const keys = Object.keys(value);
-            if (keys.length === 0) return '{}';
+            
+            // Registry item or custom class - show constructor name
+            const prefix = (constructorName && constructorName !== 'Object') ? `${constructorName} ` : '';
+            
+            if (keys.length === 0) return `${prefix}{}`;
             
             const pairs = keys.map(key => {
                 const val = value[key];
@@ -1021,7 +1118,7 @@ class FormatConverter {
                 return `${nextIndent}${JSON.stringify(key)}: ${valStr}`;
             });
             
-            return `{\n${pairs.join(',\n')}\n${currentIndent}}`;
+            return `${prefix}{\n${pairs.join(',\n')}\n${currentIndent}}`;
         }
 
         // Fallback

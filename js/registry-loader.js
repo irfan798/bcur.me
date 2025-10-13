@@ -22,32 +22,32 @@
 const PACKAGE_CONFIG = {
     'blockchain-commons': {
         name: '@ngraveio/ur-blockchain-commons',
-        version: '0.1.0',
+        version: '2.0.1-beta.2',
         description: 'BlockChain Commons types (crypto-seed, crypto-hdkey, crypto-psbt, etc.)'
     },
     'coin-identity': {
         name: '@ngraveio/ur-coin-identity',
-        version: '0.1.0',
+        version: '2.0.1-beta.2',
         description: 'Coin identity type'
     },
     'sync': {
         name: '@ngraveio/ur-sync',
-        version: '0.1.0',
+        version: '2.0.1-beta.2',
         description: 'Account and portfolio sync types'
     },
     'hex-string': {
         name: '@ngraveio/ur-hex-string',
-        version: '0.1.0',
+        version: '2.0.1-beta.2',
         description: 'Hex string encoding type'
     },
     'sign': {
         name: '@ngraveio/ur-sign',
-        version: '0.1.0',
+        version: '2.0.1-beta.2',
         description: 'Sign request and response protocol types'
     },
     'uuid': {
         name: '@ngraveio/ur-uuid',
-        version: '0.1.0',
+        version: '2.0.1-beta.2',
         description: 'UUID type'
     }
 };
