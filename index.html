@@ -111,6 +111,55 @@
                         placeholder="Converted output will appear here..."
                         spellcheck="false"
                     ></textarea>
+
+                    <!-- Registry Item UI (appears when decoded-js shows a registry item) -->
+                    <div id="registry-item-ui" style="display: none; margin-top: 16px;">
+                        <!-- Interactive Console Hints Panel -->
+                        <div id="console-hints-panel" class="registry-panel">
+                            <div class="panel-header">💡 Console Playground</div>
+                            <div class="console-hints-content">
+                                <div class="hint-item">
+                                    <code class="hint-code">window.$lastRegistryItem</code>
+                                    <button class="copy-hint-btn" data-hint="window.$lastRegistryItem">📋</button>
+                                </div>
+                                <div class="hint-item">
+                                    <code class="hint-code">window.$lastRegistryItem.toUR()</code>
+                                    <button class="copy-hint-btn" data-hint="window.$lastRegistryItem.toUR()">📋</button>
+                                </div>
+                                <div class="hint-item">
+                                    <code class="hint-code">window.$lastRegistryItem.getRegistryType()</code>
+                                    <button class="copy-hint-btn" data-hint="window.$lastRegistryItem.getRegistryType()">📋</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Expandable Tree View -->
+                        <div id="tree-view-panel" class="registry-panel">
+                            <div class="panel-header">🔍 Property Inspector</div>
+                            <div id="tree-view-content" class="tree-view-content">
+                                <!-- Tree view will be rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Methods Display Panel -->
+                        <div id="methods-panel" class="registry-panel">
+                            <div class="panel-header">⚡ Available Methods</div>
+                            <div id="methods-content" class="methods-content">
+                                <!-- Methods list will be rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Copy Options -->
+                        <div id="copy-options-panel" class="registry-panel">
+                            <div class="panel-header">📋 Export Options</div>
+                            <div class="copy-options-content">
+                                <button class="copy-option-btn" data-format="json">Copy as JSON</button>
+                                <button class="copy-option-btn" data-format="hex">Copy as Hex</button>
+                                <button class="copy-option-btn" data-format="ur">Copy as UR</button>
+                                <button class="copy-option-btn" data-format="code">Copy Registry Item Code</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -393,10 +442,49 @@
             </div>
         </div>
 
-        <!-- Tab 4: Registry Browser (placeholder) -->
+        <!-- Tab 4: Registry Browser -->
         <div class="tab-content hidden" id="registry-tab">
-            <div class="section-label">Registry Browser</div>
-            <p style="color: #586069; text-align: center; padding: 40px;">Coming soon: Browse registered UR types and CDDL schemas</p>
+            <div class="section-label">📖 Registry Browser & Type Inspection</div>
+
+            <!-- Status -->
+            <div id="registryStatus" class="status">
+                <span class="status-icon">ℹ️</span>
+                <span>Loading registry types...</span>
+            </div>
+
+            <!-- Search Bar -->
+            <div style="margin-top: 16px; margin-bottom: 16px;">
+                <input
+                    type="text"
+                    id="registrySearch"
+                    placeholder="🔍 Search registry types..."
+                    style="width: 100%; padding: 10px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;"
+                />
+            </div>
+
+            <!-- Registry List -->
+            <div id="registryList" class="registry-list" style="margin-top: 16px;">
+                <!-- Registry types will be rendered here -->
+            </div>
+
+            <!-- Usage Instructions -->
+            <div class="usage-instructions" style="margin-top: 32px;">
+                <div class="section-label">📝 How to Use</div>
+                <ol>
+                    <li>Browse registered UR types organized by package</li>
+                    <li>Click on package headers to expand/collapse type lists</li>
+                    <li>Click on type rows to view CDDL schemas and documentation</li>
+                    <li>Click on CBOR tags in CDDL (e.g., <code>#6.41402(detailed-account)</code>) to navigate to definitions</li>
+                    <li>Use the search bar to filter types by name, tag, or description</li>
+                    <li>Copy CDDL schemas for reference or validation</li>
+                </ol>
+                <p style="color: #586069; font-size: 0.9em; margin-top: 8px;">
+                    💡 <strong>Tip:</strong> Open browser console to use <code>window.registryPlayground</code> API for interactive testing
+                </p>
+                <p style="color: #586069; font-size: 0.9em; margin-top: 8px;">
+                    ℹ️ Unknown CBOR tags are looked up from the IANA registry: <a href="https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml" target="_blank" rel="noopener noreferrer" style="color: #0066cc;">https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml</a>
+                </p>
+            </div>
         </div>
     </div>
 
@@ -425,5 +513,6 @@
     <script type="module" src="js/converter.js"></script>
     <script type="module" src="js/scanner.js"></script>
     <script type="module" src="js/multi-ur.js"></script>
+    <script type="module" src="js/registry.js"></script>
 </body>
 </html>

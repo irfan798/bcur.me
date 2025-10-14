@@ -98,8 +98,15 @@
 - [x] **T021** [US1] Update `index.html` script imports - Replace demo.js with js/converter.js module import
 - [x] **T022** [US1] Test refactored converter - Verify all existing demo.js functionality works in new modular structure
 - [x] **T022a** [US1] Add registry package imports to `js/converter.js` - Import all 6 ur-registry packages (@ngraveio/ur-blockchain-commons@2.0.1-beta.2, @ngraveio/ur-coin-identity@2.0.1-beta.2, @ngraveio/ur-sync@2.0.1-beta.2, @ngraveio/ur-hex-string@2.0.1-beta.2, @ngraveio/ur-sign@2.0.1-beta.2, @ngraveio/ur-uuid@2.0.1-beta.2) with console logging for verification
+- [x] **T022b** [US1] Add expandable tree view renderer for registry items in `js/converter.js` - DevTools-style collapsible property inspector with ▶/▼ icons, nested object expansion, show property types
+- [x] **T022c** [US1] Add methods display panel in `js/converter.js` - Show common registry methods (toUR(), getRegistryType(), toCBOR()) with toggle for type-specific methods, clickable to copy method call examples
+- [x] **T022d** [US1] Add interactive console hints UI in `js/converter.js` - When registry item decoded, show hint panel in output area with copy-paste examples (not just console.log)
+- [x] **T022e** [US1] Add method documentation tooltips in `js/converter.js` - Hover over method names to see parameter info and return types (extract from class definitions)
+- [x] **T022f** [US1] Implement copy-to-clipboard options for registry items in `js/converter.js` - Add "Copy as JSON", "Copy as Hex", "Copy as UR", "Copy Registry Item Code" buttons
+- [x] **T022g** [US1] Update `index.html` converter output section - Add div containers for registry item tree view, methods panel, console hints panel
+- [x] **T022h** [US1] Add CSS styles for registry item UI to `css/main.css` - Styles for tree view (▶/▼ icons, indentation), methods panel (common/type toggle), hints panel, tooltips
 
-**Checkpoint**: User Story 1 complete - existing converter functionality preserved and enhanced with console debugging + registry packages loaded
+**Checkpoint**: User Story 1 complete - existing converter functionality preserved and enhanced with console debugging + registry packages loaded + full registry item UI
 
 ---
 
@@ -174,15 +181,15 @@
 
 ### Implementation for User Story 4
 
-- [ ] **T053** [P] [US4] Create `js/registry.js` with RegistryBrowser class skeleton (constructor, state per contracts/state-schema.md)
-- [ ] **T054** [US4] Implement registry type enumeration in `js/registry.js` (load all 6 packages, extract tag/urType/CDDL metadata)
-- [ ] **T055** [US4] Implement package grouping in `js/registry.js` (group by blockchain-commons, coin-identity, sync, hex-string, sign, uuid)
-- [ ] **T056** [US4] Implement collapsible type list UI in `js/registry.js` (package sections, type rows with tag/URType/description)
-- [ ] **T057** [US4] Implement CDDL viewer in `js/registry.js` (expand type → show full CDDL with CSS-based syntax highlighting: keywords in blue, types in green, comments in gray - no external library, keep simple per constitution)
-- [ ] **T058** [US4] Implement documentation links in `js/registry.js` (link to official docs when available, null fallback)
+- [x] **T053** [P] [US4] Create `js/registry.js` with RegistryBrowser class skeleton (constructor, state per contracts/state-schema.md)
+- [x] **T054** [US4] Implement registry type enumeration in `js/registry.js` (load all 6 packages, extract tag/urType/CDDL metadata)
+- [x] **T055** [US4] Implement package grouping in `js/registry.js` (group by blockchain-commons, coin-identity, sync, hex-string, sign, uuid)
+- [x] **T056** [US4] Implement collapsible type list UI in `js/registry.js` (package sections, type rows with tag/URType/description)
+- [x] **T057** [US4] Implement CDDL viewer in `js/registry.js` (expand type → show full CDDL with CSS-based syntax highlighting: keywords in blue, types in green, comments in gray - no external library, keep simple per constitution)
+- [x] **T058** [US4] Implement documentation links in `js/registry.js` (link to official docs when available, null fallback)
 - [ ] **T059** [US4] Implement type matching in `js/registry.js` (highlight registry entry when converter shows matching UR type)
 - [ ] **T060** [US4] Implement unregistered type indicator in `js/registry.js` (show "unregistered" badge for unknown types)
-- [ ] **T061** [US4] Add registry browser tab HTML structure to `index.html` (package sections, type list, CDDL viewer, search/filter)
+- [x] **T061** [US4] Add registry browser tab HTML structure to `index.html` (package sections, type list, CDDL viewer, search/filter)
 
 **Checkpoint**: User Story 4 complete - registry browsing fully functional
 

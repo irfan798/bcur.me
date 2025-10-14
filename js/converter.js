@@ -36,6 +36,9 @@ import QRCode from 'https://esm.sh/qrcode@1.5.3';
 // Import shared utilities
 import { LRUCache, updateStatus, handleError, clearOutput as clearOutputUtil } from './shared.js';
 
+// Import registry item UI mixin
+import { RegistryItemUIMixin } from './registry-item-ui.js';
+
 // Extract cbor2 functions for CBOR diagnostic output
 const { comment, diagnose } = cbor2;
 
@@ -58,7 +61,15 @@ window.registryPackages = {
     urUuid
 };
 
+// Expose UrRegistry singleton globally for console use
+window.UrRegistry = UrRegistry;
+
+// Expose UR class globally for console use
+window.UR = UR;
+
 console.log('%c[Registry] Packages available in window.registryPackages', 'color: #4CAF50');
+console.log('%c[Registry] UrRegistry available in window.UrRegistry', 'color: #4CAF50');
+console.log('%c[Registry] UR class available in window.UR', 'color: #4CAF50');
 
 // Canonical ordered stages for pipeline visualization
 const PIPELINE_STAGES = ['multiur', 'ur', 'bytewords', 'hex', 'decoded'];
@@ -109,9 +120,12 @@ class FormatConverter {
         // Initialize console debug interface
         this.initializeConsoleDebug();
 
+        // Initialize registry item UI
+        this.initializeRegistryItemUI();
+
         this.setupEventListeners();
         this.initializeExamples();
-        
+
         // Check for forwarded data from other tabs (e.g., scanner)
         this.checkForwardedData();
     }
@@ -281,7 +295,7 @@ class FormatConverter {
              * @param {string} urType - UR type (e.g., 'crypto-seed')
              * @returns {object|null} Registry type info
              */
-            findType: (urType) => {
+            findType: (_urType) => {
                 // TODO: Integrate with registry loader when US4 is implemented
                 console.warn('Registry lookup not yet implemented. Will be available after US4 (Registry Browser)');
                 return null;
@@ -378,10 +392,16 @@ class FormatConverter {
 
         // Update global references
         window.$lastDecoded = exposed;
-        
+
         // Also expose the raw registry item for easy access
         if (itemIsRegistryItem) {
             window.$lastRegistryItem = decodedValue;
+
+            // Show registry item UI
+            this.showRegistryItemUI(decodedValue);
+        } else {
+            // Hide registry item UI for non-registry items
+            this.hideRegistryItemUI();
         }
 
         // Add to history (LRU, max 10)
@@ -465,25 +485,24 @@ class FormatConverter {
         const isRegistered = exposed.ur?.isRegistered;
         const urType = exposed.ur?.type || 'unknown';
         const isRegistryItem = exposed.isRegistryItem;
-        const registryItemType = exposed.registryItemType;
 
         // Enhanced header for registry items
         if (isRegistryItem) {
             console.log(
-                `%c🎯 Registry Item: ${registryItemType}`,
+                `%c🎯 Registry Item (ur:${urType})`,
                 'color: #00cc66; font-weight: bold; font-size: 14px; background: #f0fff0; padding: 2px 6px'
             );
         } else {
             console.log(
-                `%cℹ️ Decoded CBOR (${urType})`,
+                `%cℹ️ Decoded CBOR (ur:${urType})`,
                 'color: #0066cc; font-weight: bold; font-size: 14px'
             );
         }
-        
+
         console.log('┌─────────────────────────────────────────────────────────────');
 
         if (isRegistryItem) {
-            console.log(`│ 🏷️  Type: ${registryItemType} (Registry Class)`);
+            console.log(`│ 🏷️  UR Type: ur:${urType} (Registry Item)`);
         }
 
         if (exposed.ur) {
@@ -504,6 +523,7 @@ class FormatConverter {
 
         if (isRegistryItem) {
             console.log('│ 🎯 Registry Item: window.$lastRegistryItem');
+            console.log(`│    ↳ Query: window.UrRegistry.registry.get("${urType}")`);
             console.log('│    ↳ Try: window.$lastRegistryItem.getRegistryType()');
             console.log('│    ↳ Try: window.$lastRegistryItem.toUR()');
         }
@@ -514,9 +534,9 @@ class FormatConverter {
 
         console.log('│ 🔍 Inspect: window.$cbor.inspect(window.$lastDecoded.value)');
         console.log('└─────────────────────────────────────────────────────────────');
-        
+
         if (isRegistryItem) {
-            console.log(`%c${registryItemType} Instance:`, 'font-weight: bold; color: #00cc66');
+            console.log(`%cur:${urType} Instance:`, 'font-weight: bold; color: #00cc66');
         }
         console.log('Value:', exposed.value);
     }
@@ -744,6 +764,7 @@ class FormatConverter {
         if (!rawInput.trim()) {
             clearOutputUtil(this.outputElement, this.statusElement, () => this.resetPipeline());
             this.updateUrTypeUI({ visible: false });
+            this.hideRegistryItemUI();
             return;
         }
 
@@ -905,23 +926,24 @@ class FormatConverter {
                     // Try to manually instantiate the registry item using the UR type
                     const urType = urInstance.type;
                     const RegistryClass = UrRegistry.queryByURType(urType);
-                    
+
                     if (RegistryClass) {
                         // Use fromHex to properly instantiate the class
                         const registryItem = RegistryClass.fromHex(hex);
-                        
+
                         // Verify it's a registry item
                         if (isRegistryItem(registryItem)) {
                             // It's a typed registry item! Pretty print it
                             const rendered = this.prettyPrintJS(registryItem, 0);
-                            return { output: rendered, hex, decodedValue: registryItem, isRegistryItem: true };
+                            // Return with usedUrType so console exposure works correctly
+                            return { output: rendered, hex, decodedValue: registryItem, isRegistryItem: true, usedUrType: urType };
                         }
                     }
                 } catch (e) {
                     console.warn('Failed to decode to registry item, falling back to CBOR decode:', e);
                 }
             }
-            
+
             // Fall back to standard CBOR decode from hex
             const rendered = this.renderDecodedVariant(hex, toFormat);
 
@@ -934,7 +956,7 @@ class FormatConverter {
                 }
             }
 
-            return { output: rendered, hex, decodedValue };
+            return { output: rendered, hex, decodedValue, usedUrType };
         }
         if (toNorm === 'hex') {
             return { output: hex };
@@ -1319,6 +1341,9 @@ class FormatConverter {
         }
     }
 }
+
+// Mix in Registry Item UI methods
+Object.assign(FormatConverter.prototype, RegistryItemUIMixin);
 
 // Initialize converter when DOM is ready
 if (document.readyState === 'loading') {
