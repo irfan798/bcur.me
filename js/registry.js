@@ -59,6 +59,7 @@ class RegistryBrowser {
         this.registryTypes = []; // Will be populated during enumeration
         this.expandedTypes = new Set(); // Track which types are expanded
         this.collapsedPackages = new Set(); // Track which packages are collapsed
+        this.matchedType = null; // Currently matched type from converter
 
         // Initialize console playground
         this.initializeConsolePlayground();
@@ -74,6 +75,9 @@ class RegistryBrowser {
 
         // Handle hash navigation for direct linking to types
         this.setupHashNavigation();
+
+        // Listen for type match events from converter
+        this.setupTypeMatching();
     }
 
     /**
@@ -356,13 +360,17 @@ class RegistryBrowser {
      */
     renderTypeRow(type) {
         const isExpanded = this.expandedTypes.has(type.urType);
+        const isMatched = this.matchedType === type.urType;
 
         let html = `
-            <div class="type-row ${isExpanded ? 'expanded' : ''}" data-ur-type="${type.urType}">
+            <div class="type-row ${isExpanded ? 'expanded' : ''} ${isMatched ? 'matched' : ''}" data-ur-type="${type.urType}">
                 <div class="type-header">
                     <span class="expand-icon">${isExpanded ? '▼' : '▶'}</span>
                     <div class="type-info">
-                        <div class="type-name">${type.urType}</div>
+                        <div class="type-name">
+                            ${type.urType}
+                            ${isMatched ? '<span class="match-badge">Active in Converter</span>' : ''}
+                        </div>
                         <div class="type-meta">
                             <span class="type-tag">Tag: ${type.tag}</span>
                             <span class="type-class">Class: ${type.className}</span>
@@ -652,6 +660,98 @@ class RegistryBrowser {
         window.addEventListener('hashchange', () => {
             this.handleHashChange();
         });
+    }
+
+    /**
+     * Setup Type Matching
+     *
+     * Listens for type match events from converter tab and highlights matching types
+     */
+    setupTypeMatching() {
+        // Listen for type match events from converter
+        window.addEventListener('bcur:typeDecoded', (event) => {
+            const { urType, tag, isRegistered } = event.detail;
+            this.highlightMatchingType(urType, tag, isRegistered);
+        });
+    }
+
+    /**
+     * Highlight Matching Type
+     *
+     * Highlights the type row that matches the decoded UR type from converter
+     * @param {string} urType - UR type string (e.g., 'crypto-seed')
+     * @param {number} tag - CBOR tag number
+     * @param {boolean} isRegistered - Whether type is in registry
+     */
+    highlightMatchingType(urType, tag, isRegistered) {
+        // Clear previous matches
+        const previousMatches = this.registryListElement?.querySelectorAll('.type-row.matched');
+        previousMatches?.forEach(el => el.classList.remove('matched'));
+
+        // Store matched type
+        this.matchedType = urType;
+
+        if (!isRegistered) {
+            // Show unregistered type indicator
+            this.showUnregisteredTypeIndicator(urType, tag);
+            return;
+        }
+
+        // Find and highlight matching type
+        const matchingRow = this.registryListElement?.querySelector(`[data-ur-type="${urType}"]`);
+        if (matchingRow) {
+            matchingRow.classList.add('matched');
+            
+            // Expand the type to show details
+            if (!this.expandedTypes.has(urType)) {
+                this.toggleTypeExpand(urType);
+            }
+
+            // Scroll into view
+            matchingRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    /**
+     * Show Unregistered Type Indicator
+     *
+     * Displays a message for types not in the registry
+     * @param {string} urType - UR type string
+     * @param {number} tag - CBOR tag number
+     */
+    showUnregisteredTypeIndicator(urType, tag) {
+        // Create or update unregistered type notice
+        let notice = document.getElementById('unregistered-type-notice');
+        
+        if (!notice) {
+            notice = document.createElement('div');
+            notice.id = 'unregistered-type-notice';
+            notice.className = 'unregistered-type-notice';
+            this.registryListElement?.insertBefore(notice, this.registryListElement.firstChild);
+        }
+
+        notice.innerHTML = `
+            <div class="notice-header">
+                <span class="notice-icon">⚠️</span>
+                <strong>Unregistered Type Detected</strong>
+            </div>
+            <div class="notice-body">
+                <p>The decoded UR uses an unregistered type:</p>
+                <ul>
+                    <li><strong>UR Type:</strong> <code>${urType}</code></li>
+                    <li><strong>CBOR Tag:</strong> <code>${tag}</code></li>
+                </ul>
+                <p class="notice-hint">
+                    This type is not in the standard UR registry. It may be a custom implementation 
+                    or an experimental type. Check the <a href="https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml" 
+                    target="_blank" rel="noopener noreferrer">IANA CBOR Tags registry</a> for more information.
+                </p>
+            </div>
+            <button class="notice-close" onclick="this.parentElement.remove()">×</button>
+        `;
+
+        // Scroll notice into view
+        notice.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     /**

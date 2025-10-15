@@ -187,8 +187,8 @@
 - [x] **T056** [US4] Implement collapsible type list UI in `js/registry.js` (package sections, type rows with tag/URType/description)
 - [x] **T057** [US4] Implement CDDL viewer in `js/registry.js` (expand type → show full CDDL with CSS-based syntax highlighting: keywords in blue, types in green, comments in gray - no external library, keep simple per constitution)
 - [x] **T058** [US4] Implement documentation links in `js/registry.js` (link to official docs when available, null fallback)
-- [ ] **T059** [US4] Implement type matching in `js/registry.js` (highlight registry entry when converter shows matching UR type)
-- [ ] **T060** [US4] Implement unregistered type indicator in `js/registry.js` (show "unregistered" badge for unknown types)
+- [x] **T059** [US4] Implement type matching in `js/registry.js` (highlight registry entry when converter shows matching UR type)
+- [x] **T060** [US4] Implement unregistered type indicator in `js/registry.js` (show "unregistered" badge for unknown types)
 - [x] **T061** [US4] Add registry browser tab HTML structure to `index.html` (package sections, type list, CDDL viewer, search/filter)
 
 **Checkpoint**: User Story 4 complete - registry browsing fully functional

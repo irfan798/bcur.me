@@ -427,9 +427,36 @@ class FormatConverter {
 
             // Show registry item UI
             this.showRegistryItemUI(decodedValue);
+
+            // Dispatch event for registry browser to highlight matching type
+            const urType = exposed.ur?.type;
+            if (urType) {
+                window.dispatchEvent(new CustomEvent('bcur:typeDecoded', {
+                    detail: {
+                        urType: urType,
+                        tag: decodedValue.getRegistryType?.()?.getTag?.() || 'unknown',
+                        isRegistered: true
+                    }
+                }));
+            }
         } else {
             // Hide registry item UI for non-registry items
             this.hideRegistryItemUI();
+
+            // Check if we have a UR type for non-registry items (unregistered types)
+            const urType = exposed.ur?.type;
+            if (urType && urType !== 'unknown') {
+                // Get tag from CBOR data if possible
+                const tag = decodedValue?.getTag?.() || 'unknown';
+                
+                window.dispatchEvent(new CustomEvent('bcur:typeDecoded', {
+                    detail: {
+                        urType: urType,
+                        tag: tag,
+                        isRegistered: false
+                    }
+                }));
+            }
         }
 
         // Add to history (LRU, max 10)
