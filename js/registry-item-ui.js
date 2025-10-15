@@ -1026,10 +1026,20 @@ console.log('UR string:', item.toUR().toString());`;
 
             // Get parameter count
             const paramCount = method.length;
-
-            if (paramCount > 0) {
-                // Has parameters - show hint instead of executing
-                console.warn(`%c⚠️ ${methodKey}() requires ${paramCount} parameter(s)`, 'color: #f59e0b; font-weight: bold;');
+            
+            // Try to execute the method
+            // Methods with optional parameters (e.g., toString(hardenedFlag?)) have length=0
+            // We attempt execution and catch errors for methods that truly require params
+            const fullPath = `${methodPath}.${methodKey}()`;
+            let result;
+            
+            try {
+                console.log(`%c▶️ Executing: ${fullPath}`, 'color: #667eea; font-weight: bold;');
+                result = method.call(targetObject);
+            } catch (error) {
+                // Method requires parameters - show console hint
+                console.warn(`%c⚠️ ${methodKey}() requires parameters`, 'color: #f59e0b; font-weight: bold;');
+                console.error(error);
                 const cleanPath = methodPath.replace('root.', '');
                 console.log(`Try: window.$lastRegistryItem${cleanPath ? '.' + cleanPath : ''}.${methodKey}(/* add parameters */)`);
                 
@@ -1038,11 +1048,6 @@ console.log('UR string:', item.toUR().toString());`;
                 setTimeout(() => { headerElement.style.background = ''; }, 500);
                 return;
             }
-
-            // Execute the method
-            const fullPath = `${methodPath}.${methodKey}()`;
-            console.log(`%c▶️ Executing: ${fullPath}`, 'color: #667eea; font-weight: bold;');
-            const result = method.call(targetObject);
             
             console.log('%c✓ Result:', 'color: #10b981; font-weight: bold;');
             console.log(result);
