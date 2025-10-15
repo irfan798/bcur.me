@@ -15,6 +15,7 @@
 import {
     UR,                    // Core UR class for encoding/decoding
     UrFountainDecoder,     // Multi-part UR decoder
+    UrFountainEncoder,     // Multi-part UR encoder
     BytewordEncoding,      // Bytewords encoder with style support
     cbor2,                 // CBOR diagnostics (comment/diagnose)
     isRegistryItem,        // Registry item type guard
@@ -67,9 +68,36 @@ window.UrRegistry = UrRegistry;
 // Expose UR class globally for console use
 window.UR = UR;
 
+// Expose bc-ur library classes globally for console use (FR-047)
+window.BytewordEncoding = BytewordEncoding;
+window.UrFountainEncoder = UrFountainEncoder;
+window.UrFountainDecoder = UrFountainDecoder;
+
+// Expose ur-registry classes on console (FR-048)
+// Extract all registry item classes from packages and expose them individually
+const registryClasses = {};
+for (const [packageName, packageExports] of Object.entries(window.registryPackages)) {
+    for (const [exportName, exportValue] of Object.entries(packageExports)) {
+        // Registry item classes are constructors (functions with prototype)
+        if (typeof exportValue === 'function' && exportValue.prototype) {
+            window[exportName] = exportValue;
+            registryClasses[exportName] = packageName;
+        }
+    }
+}
+
 console.log('%c[Registry] Packages available in window.registryPackages', 'color: #4CAF50');
 console.log('%c[Registry] UrRegistry available in window.UrRegistry', 'color: #4CAF50');
 console.log('%c[Registry] UR class available in window.UR', 'color: #4CAF50');
+console.log('%c[Console] bc-ur library classes exposed:', 'color: #FF9800; font-weight: bold');
+console.log('  • window.UR - Core UR class');
+console.log('  • window.BytewordEncoding - Bytewords encoder/decoder');
+console.log('  • window.UrFountainEncoder - Multi-part UR encoder');
+console.log('  • window.UrFountainDecoder - Multi-part UR decoder');
+console.log('%c[Console] Registry item classes exposed:', 'color: #9C27B0; font-weight: bold');
+for (const [className, packageName] of Object.entries(registryClasses)) {
+    console.log(`  • window.${className} (from ${packageName})`);
+}
 
 // Canonical ordered stages for pipeline visualization
 const PIPELINE_STAGES = ['multiur', 'ur', 'bytewords', 'hex', 'decoded'];
@@ -524,7 +552,7 @@ class FormatConverter {
         if (isRegistryItem) {
             console.log('│ 🎯 Registry Item: window.$lastRegistryItem');
             console.log(`│    ↳ Query: window.UrRegistry.registry.get("${urType}")`);
-            console.log('│    ↳ Try: window.$lastRegistryItem.getRegistryType()');
+            console.log('│    ↳ Type info: window.$lastRegistryItem.type');
             console.log('│    ↳ Try: window.$lastRegistryItem.toUR()');
         }
 

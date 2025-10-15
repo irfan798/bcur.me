@@ -30,9 +30,22 @@ body {
     color: #333;
 }
 
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+.header-text {
+    flex: 1;
+    text-align: left;
+}
+
 .header h1 {
     font-size: 24px;
     font-weight: 600;
+    margin-bottom: 8px;
 }
 
 .header p {
@@ -40,6 +53,119 @@ body {
     margin-top: 8px;
     margin-bottom: 20px;
     font-size: 14px;
+}
+
+.header-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-shrink: 0;
+}
+
+.made-by {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.made-by-text {
+    font-size: 0.85rem;
+    color: #666;
+    margin-right: 0.25rem;
+}
+
+.author-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.author-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f5f5f5;
+    color: #333;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.social-link:hover {
+    background: #333;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.social-link.github:hover {
+    background: #24292e;
+}
+
+.social-link.linkedin:hover {
+    background: #0077b5;
+}
+
+.social-link.medium:hover {
+    background: #00ab6c;
+}
+
+.project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f5f5f5;
+    border-radius: 6px;
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.project-link:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.project-link svg {
+    flex-shrink: 0;
+}
+
+/* Responsive header */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .header-text {
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .header-links {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .made-by {
+        justify-content: center;
+    }
 }
 
 .converter-panel {
@@ -566,6 +692,54 @@ body {
     margin-bottom: 16px;
 }
 
+/* Registry Layout - Two Columns for Top Row */
+.registry-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 968px) {
+    .registry-top-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Property Inspector - Full Width */
+.property-inspector-wide {
+    width: 100%;
+}
+
+.inspector-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.inspector-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.copy-option-btn.compact {
+    padding: 6px 12px;
+    font-size: 12px;
+    background: white;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.copy-option-btn.compact:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
 .panel-header {
     font-weight: 600;
     color: #24292e;
@@ -621,32 +795,117 @@ body {
 /* Tree View Panel */
 .tree-view-content {
     background: white;
-    padding: 12px;
+    padding: 16px;
     border-radius: 6px;
     border: 1px solid #e1e4e8;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
-    font-size: 12px;
-    line-height: 1.6;
-    max-height: 400px;
+    font-size: 13px;
+    line-height: 1.8;
+    max-height: 600px;
     overflow-y: auto;
+    min-height: 200px;
+}
+
+.property-inspector-wide .tree-view-content {
+    max-height: 800px;
 }
 
 .tree-node {
     display: block;
-    margin: 2px 0;
+    margin: 4px 0;
 }
 
 .tree-node-header {
     display: inline-flex;
     align-items: center;
     cursor: pointer;
-    padding: 2px 4px;
+    padding: 4px 6px;
     border-radius: 3px;
     transition: background-color 0.2s;
+    gap: 6px;
 }
 
 .tree-node-header:hover {
     background: #f6f8fa;
+}
+
+/* Tree Section Headers */
+.tree-section {
+    margin-bottom: 16px;
+}
+
+.tree-section-header {
+    font-weight: 600;
+    color: #24292e;
+    font-size: 13px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+/* Tree Methods Grid */
+.tree-methods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.tree-method-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+    text-align: left;
+}
+
+.tree-method-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+.tree-method-btn .method-icon {
+    font-size: 14px;
+}
+
+.tree-method-btn .method-name {
+    flex: 1;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
+    font-weight: 500;
+}
+
+.tree-method-btn .method-badge {
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: #e1e4e8;
+    color: #586069;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.tree-method-btn:hover .method-badge {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.tree-method-btn .method-badge.type-specific {
+    background: #dbedff;
+    color: #0366d6;
+}
+
+.tree-method-btn:hover .method-badge.type-specific {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
 }
 
 .tree-expand-icon {
@@ -655,6 +914,123 @@ body {
     font-size: 10px;
     color: #586069;
     user-select: none;
+}
+
+/* Tree Function Nodes (Clickable Functions) */
+.tree-node-function {
+    margin: 4px 0;
+}
+
+.tree-function-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    border: 1px solid #e1e4e8;
+}
+
+.tree-function-header:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: translateX(2px);
+}
+
+.tree-function-icon {
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.tree-function-header:hover .tree-function-icon {
+    transform: scale(1.1);
+}
+
+.tree-function-header:hover .tree-key {
+    color: white;
+}
+
+.tree-function-header:hover .tree-type {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Function Result Display */
+.tree-function-result {
+    background: #f6f8fa;
+    border-left: 3px solid #667eea;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 4px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tree-function-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.tree-function-result-header:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.tree-function-result-header .result-toggle-icon {
+    color: #667eea;
+    font-size: 10px;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.tree-function-result-header .result-toggle-icon:hover {
+    transform: scale(1.2);
+}
+
+.tree-function-result-header .result-icon {
+    color: #10b981;
+    font-size: 14px;
+}
+
+.tree-function-result-header .result-label {
+    color: #586069;
+    font-weight: 600;
+}
+
+.tree-function-result-header .result-type {
+    color: #667eea;
+    font-size: 11px;
+    background: #e1e4e8;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.tree-function-result-value {
+    background: white;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #e1e4e8;
+    font-size: 12px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .tree-key {
@@ -667,6 +1043,48 @@ body {
     color: #586069;
     font-size: 11px;
     margin-left: 6px;
+}
+
+/* Registry Type Tags */
+.registry-type-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.registry-type-tag .tag-badge {
+    background: #667eea;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.registry-type-tag .ur-type {
+    background: #e1e4e8;
+    color: #0066cc;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* Inspector Controls */
+.inspector-controls input[type="checkbox"] {
+    cursor: pointer;
+    width: 14px;
+    height: 14px;
+}
+
+.inspector-controls label {
+    font-weight: 500;
+    color: #24292e;
+}
+
+.inspector-controls label:hover {
+    color: #667eea;
 }
 
 .tree-value {
@@ -919,4 +1337,277 @@ body {
         transform: translateY(0);
         opacity: 1;
     }
+}
+
+/* Method Result Containers (FR-042: Inline Execution) */
+.method-result-container {
+    margin: 12px 0 12px 20px;
+    padding: 12px;
+    background: #f6f8fa;
+    border-left: 3px solid #10b981;
+    border-radius: 4px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.method-result-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #586069;
+}
+
+.result-label {
+    font-weight: 600;
+}
+
+.result-type {
+    background: #e1e4e8;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 11px;
+    color: #0969da;
+}
+
+.method-result-value pre {
+    background: white;
+    padding: 8px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 12px;
+    color: #24292e;
+    overflow-x: auto;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.nested-tree-view {
+    margin-top: 8px;
+    padding-left: 12px;
+    border-left: 2px solid #d1d5da;
+}
+
+/* Console Hint Containers (FR-043: Parameterized Methods) */
+.console-hint-container {
+    margin: 8px 0 8px 20px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.console-hint {
+    background: #fff8e1;
+    border: 1px solid #ffb300;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.hint-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.hint-icon {
+    font-size: 16px;
+}
+
+.hint-text {
+    color: #7c6100;
+    font-weight: 600;
+}
+
+.hint-signature {
+    background: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 12px;
+    color: #8b5cf6;
+    border: 1px solid #e1e4e8;
+}
+
+.hint-code {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #e1e4e8;
+}
+
+.hint-code code {
+    flex: 1;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 12px;
+    color: #6366f1;
+}
+
+.copy-hint-btn {
+    padding: 4px 8px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+
+.copy-hint-btn:hover {
+    background: #5568d3;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Type Drawer Styles (FR-045: Expandable Type Information) */
+#type-drawer-panel .panel-header.clickable {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+#type-drawer-panel .panel-header.clickable:hover {
+    background: #f6f8fa;
+}
+
+#type-drawer-icon {
+    display: inline-block;
+    transition: transform 0.2s;
+    margin-right: 4px;
+    font-size: 12px;
+}
+
+.type-drawer-content {
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 1;
+}
+
+.type-drawer-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+
+.type-info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 16px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #f6f8fa;
+    border-radius: 6px;
+}
+
+.type-info-row {
+    display: contents;
+}
+
+.type-info-label {
+    font-weight: 600;
+    color: #586069;
+    font-size: 12px;
+}
+
+.type-info-value {
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 12px;
+    color: #0969da;
+    background: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.cddl-section {
+    margin-top: 12px;
+}
+
+.cddl-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.cddl-title {
+    font-weight: 600;
+    color: #24292e;
+    font-size: 13px;
+}
+
+.copy-cddl-btn-small {
+    padding: 4px 8px;
+    background: white;
+    border: 1px solid #d1d5da;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-cddl-btn-small:hover {
+    background: #f6f8fa;
+    border-color: #667eea;
+}
+
+.cddl-code {
+    background: #24292e;
+    color: #e1e4e8;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 12px;
+    overflow-x: auto;
+    max-height: 300px;
+    overflow-y: auto;
+    line-height: 1.5;
+}
+
+.cddl-keyword {
+    color: #79c0ff;
+}
+
+.cddl-type {
+    color: #7ee787;
+}
+
+.cddl-comment {
+    color: #8b949e;
+    font-style: italic;
+}
+
+.type-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+}
+
+.view-in-registry-btn {
+    padding: 8px 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.view-in-registry-btn:hover {
+    background: #5568d3;
 }

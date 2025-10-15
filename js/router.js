@@ -71,10 +71,17 @@ class Router {
      *
      * Extracts tab ID from hash and activates tab.
      * Falls back to default tab if hash is invalid.
+     * Supports query parameters (e.g., #registry?type=keypath)
      */
     handleHashChange() {
         // Extract tab ID from hash (remove # prefix)
-        const hash = window.location.hash.slice(1);
+        let hash = window.location.hash.slice(1);
+
+        // Extract tab name before query parameters (if any)
+        const queryIndex = hash.indexOf('?');
+        if (queryIndex !== -1) {
+            hash = hash.substring(0, queryIndex);
+        }
 
         // Validate and fallback to default
         const tabId = this.validTabs.includes(hash) ? hash : this.defaultTab;

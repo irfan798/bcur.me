@@ -10,6 +10,12 @@
 ### Session 2025-10-08
 - Q: When users set `repeatAfterRatio = 0` (infinite looping), what should happen with animation playback and download/export behavior? → A: Loop animation indefinitely but disable downloads, suppress full text list, and present streaming preview that updates as each next part is requested.
 
+### Session 2025-10-14
+- Q1: Console method execution result display → A: In-place expansion in property inspector tree (wider layout for better visibility)
+- Q2: Method parameter input → A: Smart defaults (no-param methods execute directly, param methods show in console with placeholder hints)
+- Q3: Type browser integration scope → A: Expandable drawer (collapsed by default showing type summary, expand to see full CDDL inline without leaving converter)
+- Additional: Use bc-ur native library functions directly on console instead of wrapper API, provide documentation tips and links
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Format Conversion & Inspection (Priority: P1)
@@ -25,8 +31,9 @@ Developers and users need to convert between different UR representations (UR st
 1. **Given** a valid single-part UR string, **When** user pastes it into the converter, **Then** system displays UR type, hex representation, bytewords (minimal/standard/URI styles), and decoded CBOR in multiple views (JSON, diagnostic, commented, JavaScript)
 2. **Given** hex input, **When** user provides UR type, **Then** system generates valid UR string and bytewords
 3. **Given** multi-part UR text (multiple lines with ur: prefix), **When** user pastes it, **Then** system assembles parts using fountain decoder and displays decoded content with completion progress
-4. **Given** decoded CBOR content, **When** user inspects registry type, **Then** system shows whether type is registered in ur-registry and links to documentation
-5. **Given** invalid input, **When** conversion fails, **Then** system shows specific error message indicating what broke and at which pipeline stage
+4. **Given** decoded CBOR content, **When** user inspects registry type, **Then** system shows whether type is registered in ur-registry with expandable type drawer containing CDDL schema, documentation links, and package info
+5. **Given** registry item decoded, **When** user views property inspector, **Then** system displays wide tree view with expandable properties, clickable methods (no-param methods execute inline, param methods show console hints), and nested registry item results
+6. **Given** invalid input, **When** conversion fails, **Then** system shows specific error message indicating what broke and at which pipeline stage
 
 ---
 
@@ -95,11 +102,13 @@ Developers need to dynamically create and test registry items in the browser con
 
 **Acceptance Scenarios**:
 
-1. **Given** user decodes UR to JavaScript view, **When** output is displayed, **Then** system shows hint to open browser console with example commands (e.g., `window.registryPlayground.createItem(...)`)
-2. **Given** developer opens console, **When** typing `window.registryPlayground`, **Then** autocomplete shows available methods (createItem, encode, decode, validate)
-3. **Given** developer creates custom registry item in console, **When** instance is created, **Then** object auto-logs to console with expandable structure showing all properties and methods
-4. **Given** custom registry item, **When** developer calls `.encode()`, **Then** system returns CBOR hex and displays in console for copy/paste
-5. **Given** CBOR hex, **When** developer calls `window.registryPlayground.decode(hex)`, **Then** system returns JavaScript object with decoded structure
+1. **Given** user decodes UR to registry item, **When** output is displayed, **Then** system shows wide property inspector tree with data-focused view, clickable methods panel, and console tips with bc-ur library documentation links
+2. **Given** developer opens console, **When** typing bc-ur native functions (e.g., `UR.fromString()`, `new CryptoHDKey()`), **Then** browser autocomplete shows available library methods and classes
+3. **Given** developer creates registry item in console using native bc-ur classes, **When** instance is assigned to variable, **Then** system detects it and offers to display in property inspector UI
+4. **Given** registry item in property inspector, **When** user clicks no-parameter method, **Then** system executes method inline and expands result in tree view
+5. **Given** registry item in property inspector, **When** user clicks parameterized method, **Then** system shows console hint with method signature and placeholder example (e.g., `item.toUR() // Copy to console and execute`)
+6. **Given** method execution returns another registry item, **When** result is displayed, **Then** system renders nested tree view with same interactive capabilities (methods, properties, nested expansion)
+7. **Given** decoded registry item, **When** user expands type drawer, **Then** system displays type info from registry browser (CDDL schema, tag, package, docs link) without leaving converter tab
 
 ---
 
@@ -181,24 +190,34 @@ Developers need to dynamically create and test registry items in the browser con
 - **FR-038**: System MUST highlight matching registry entry when user decodes UR with registered type
 - **FR-039**: System MUST show "unregistered type" indicator for URs with types not in registry
 
-#### Registry Item Interactive Console (Tab 4)
+#### Format Conversion - Registry Item Property Inspector (Tab 1)
 
-- **FR-040**: System MUST expose `window.registryPlayground` object with methods: createItem, encode, decode, validate
-- **FR-041**: System MUST display console hint when user views decoded JavaScript output with example commands
-- **FR-042**: System MUST auto-log created registry item instances to console with expandable structure
-- **FR-043**: System MUST provide encode method that returns CBOR hex from registry item instance
-- **FR-044**: System MUST provide decode method that parses CBOR hex to JavaScript object
-- **FR-045**: System MUST preserve all console functionality (errors, logs, warnings) for developer debugging
+- **FR-040**: System MUST display decoded registry items in wide tree view with expandable properties, nested object navigation, and property type annotations
+- **FR-041**: System MUST show clickable methods panel with common registry methods (toUR(), getRegistryType(), toCBOR()) and type-specific methods toggle
+- **FR-042**: System MUST execute no-parameter methods inline when clicked, displaying results in expanded tree view at click location
+- **FR-043**: System MUST show console hint with method signature for parameterized methods when clicked (e.g., `item.validate(schema) // Copy to console`)
+- **FR-044**: System MUST render method results that are registry items as nested tree views with same interactive capabilities (recursive inspector pattern)
+- **FR-045**: System MUST display expandable type drawer for decoded registry item showing CDDL schema, tag number, package info, and documentation links from registry browser
+- **FR-046**: System MUST provide copy-to-clipboard options: "Copy as JSON", "Copy as Hex", "Copy as UR", "Copy Registry Item Code" (constructor call with current values)
+
+#### Format Conversion - Console Integration (Tab 1)
+
+- **FR-047**: System MUST expose bc-ur library natively on console (UR, BytewordEncoding, UrFountainEncoder, UrFountainDecoder classes accessible globally)
+- **FR-048**: System MUST expose all ur-registry classes on console (CryptoHDKey, CryptoSeed, etc. from loaded packages)
+- **FR-049**: System MUST display console tips panel when registry item decoded, showing library documentation links and common usage patterns
+- **FR-050**: System MUST detect registry item instances created in console and offer "Show in Property Inspector" action
+- **FR-051**: System MUST provide method documentation tooltips in property inspector (hover over method name to see parameters and return type)
+- **FR-052**: System MUST preserve all browser console functionality (errors, logs, warnings, autocomplete) without interference
 
 #### Cross-Cutting Requirements
 
-- **FR-046**: System MUST work in mobile browsers (Chrome/Firefox mobile) with touch-optimized controls
-- **FR-047**: System MUST use hash-based routing for tabs (#converter, #multi-ur, #scanner, #registry)
-- **FR-048**: System MUST forward data between tabs via URL parameters and temporary session storage (TTL: 1 hour, cleared on page unload via beforeunload event, max payload: 5MB per constitution privacy guard)
-- **FR-049**: System MUST debounce user inputs (typing: 150ms, paste: 10ms) to optimize performance
-- **FR-050**: System MUST cache conversion results (key: rawInput|format|outputFormat|urType|styles, max 120 items, LRU eviction)
-- **FR-051**: System MUST use bc-ur library methods exclusively (never reimplement encoding pipelines)
-- **FR-052**: System MUST pin library version in production (@ngraveio/bc-ur@2.0.0-beta.9 via CDN)
+- **FR-053**: System MUST work in mobile browsers (Chrome/Firefox mobile) with touch-optimized controls
+- **FR-054**: System MUST use hash-based routing for tabs (#converter, #multi-ur, #scanner, #registry)
+- **FR-055**: System MUST forward data between tabs via URL parameters and temporary session storage (TTL: 1 hour, cleared on page unload via beforeunload event, max payload: 5MB per constitution privacy guard)
+- **FR-056**: System MUST debounce user inputs (typing: 150ms, paste: 10ms) to optimize performance
+- **FR-057**: System MUST cache conversion results (key: rawInput|format|outputFormat|urType|styles, max 120 items, LRU eviction)
+- **FR-058**: System MUST use bc-ur library methods exclusively (never reimplement encoding pipelines)
+- **FR-059**: System MUST pin library version in production (@ngraveio/bc-ur@2.0.0-beta.9 via CDN)
 
 ### Key Entities
 
@@ -307,7 +326,7 @@ Each workflow (convert, generate, scan, inspect) is distinct. Tabs reduce cognit
 UrFountainDecoder tracks two states: seenBlocks (mixed fragments scanned) and decodedBlocks (original blocks resolved via XOR reduction). Users care about progress toward completion, which is decodedBlocks. Seen blocks can be infinite with fountain codes, decoded blocks are fixed count.
 
 **Why console playground instead of built-in registry item creator?**  
-Developers already familiar with browser DevTools. Building duplicate console UI adds complexity. Exposing window.registryPlayground with hints is simpler, more flexible, and follows developer expectations.
+Developers already familiar with browser DevTools. Exposing bc-ur library natively on console (UR, CryptoHDKey, etc.) is simpler and more powerful than building a wrapper API. Property inspector provides visual feedback while console provides full programmatic control with library documentation links.
 
 **Why no sensitive data warnings?**  
 Users inspecting wallet URs already know what's sensitive. False positives/negatives create confusion. Tool's role is to decode and display, user decides what's private.

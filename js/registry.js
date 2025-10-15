@@ -71,6 +71,9 @@ class RegistryBrowser {
 
         // Render initial UI
         this.renderRegistryList();
+
+        // Handle hash navigation for direct linking to types
+        this.setupHashNavigation();
     }
 
     /**
@@ -632,6 +635,44 @@ class RegistryBrowser {
             }, 2000);
 
             updateStatus(this.statusElement, `Navigated to ${typeName}`, 'success');
+        }
+    }
+
+    /**
+     * Setup Hash Navigation
+     *
+     * Handles URL hash parameters for direct linking to types
+     * Format: #registry?type=detailed-account
+     */
+    setupHashNavigation() {
+        // Handle initial hash on load
+        this.handleHashChange();
+
+        // Listen for hash changes (e.g., when clicking "View in Registry Browser")
+        window.addEventListener('hashchange', () => {
+            this.handleHashChange();
+        });
+    }
+
+    /**
+     * Handle Hash Change
+     *
+     * Parses URL hash and navigates to specified type if present
+     */
+    handleHashChange() {
+        const hash = window.location.hash;
+
+        // Check if we're on registry tab with type parameter
+        if (hash.startsWith('#registry')) {
+            const params = new URLSearchParams(hash.substring(hash.indexOf('?')));
+            const typeParam = params.get('type');
+
+            if (typeParam) {
+                // Wait a bit for the tab to activate and registry to render
+                setTimeout(() => {
+                    this.navigateToType(typeParam);
+                }, 300);
+            }
         }
     }
 

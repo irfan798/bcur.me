@@ -197,24 +197,35 @@
 
 ## Phase 7: User Story 5 - Registry Item Interactive Console (Priority: P3)
 
-**Goal**: Create and test registry items via browser console API for experimentation
+**Goal**: Enable developers to use bc-ur library natively on console with property inspector integration
 
-**Independent Test**: Open converter → decode UR → see console hint → use window.registryPlayground.createItem() → encode/decode in console
+**Independent Test**: Decode UR → see wide property inspector → click methods (execute inline or get console hints) → use bc-ur classes directly on console
 
-**Deliverables**: FR-040 through FR-045 (console API exposure, createItem/encode/decode methods, auto-logging)
+**Deliverables**: FR-040 through FR-052 (wide tree view, clickable methods, inline execution, console integration, expandable type drawer)
 
-### Implementation for User Story 5
+### Implementation for User Story 5 (NEW Requirements - Updated 2025-10-14)
 
-- [ ] **T062** [US5] Implement window.registryPlayground in `js/registry.js` (expose global object with createItem, encode, decode, validate methods)
-- [ ] **T063** [US5] Implement createItem() in `js/registry.js` (accepts typeName + data, returns RegistryItem instance)
-- [ ] **T064** [US5] Implement createFromDecoded() in `js/registry.js` (promotes window.$lastDecoded to editable registry item)
-- [ ] **T065** [US5] Implement encode() in `js/registry.js` (RegistryItem → CBOR hex/UR/bytewords, console display)
-- [ ] **T066** [US5] Implement decode() in `js/registry.js` (CBOR hex → JavaScript object, structure inspection)
-- [ ] **T067** [US5] Implement validate() stub in `js/registry.js` (CDDL schema presence check, full validation post-MVP)
-- [ ] **T068** [US5] Implement auto-logging in `js/registry.js` (created instances auto-log to console with expandable structure)
-- [ ] **T069** [US5] Add console hints to converter in `js/converter.js` (show example commands when decoded JavaScript view displayed)
+**COMPLETED (Already Implemented in T022b-T022h)**:
+- [x] Wide property inspector tree view (FR-040) - Implemented in T022b
+- [x] Methods panel with common/type-specific toggle (FR-041) - Implemented in T022c  
+- [x] Copy-to-clipboard options (FR-046) - Implemented in T022f
+- [x] Tree view CSS styles (FR-040) - Implemented in T022h
 
-**Checkpoint**: All user stories complete - full feature set operational
+**NEW Tasks (Based on Updated Spec)**:
+
+- [x] **T062** [US5] Add inline method execution to `js/registry-item-ui.js` (FR-042: no-param methods execute directly, results expand in-place in tree view)
+- [ ] **T063** [US5] Add console hints for parameterized methods in `js/registry-item-ui.js` (FR-043: show method signature with placeholder, e.g., `item.validate(schema) // Copy to console`) - IMPLEMENTED in T062
+- [ ] **T064** [US5] Implement recursive inspector for method results in `js/registry-item-ui.js` (FR-044: when method returns registry item, render nested tree with same interactive capabilities) - IMPLEMENTED in T062
+- [x] **T065** [US5] Add expandable type drawer to converter output in `js/converter.js` (FR-045: show CDDL schema, tag, package, docs link from registry browser - collapsed by default)
+- [x] **T066** [US5] Expose bc-ur library natively on console in `js/converter.js` (FR-047: UR, BytewordEncoding, UrFountainEncoder, UrFountainDecoder globally accessible)
+- [x] **T067** [US5] Expose ur-registry classes on console in `js/converter.js` (FR-048: CryptoHDKey, CryptoSeed, etc. from all 6 loaded packages)
+- [ ] **T068** [US5] Add console tips panel to registry item UI in `js/registry-item-ui.js` (FR-049: show bc-ur library documentation links and usage patterns) - PARTIAL (exists but needs docs links)
+- [ ] **T069** [US5] Implement console instance detection in `js/converter.js` (FR-050: detect registry items created in console, offer "Show in Property Inspector" action)
+- [ ] **T070** [US5] Add method documentation tooltips to methods panel in `js/registry-item-ui.js` (FR-051: hover to see parameters and return type)
+- [x] **T071** [US5] Update HTML for expandable type drawer in `index.html` (add drawer container in converter output section)
+- [x] **T072** [US5] Add CSS for type drawer and wider property inspector in `css/main.css` (drawer animation, wider tree layout)
+
+**Checkpoint**: All user stories complete - full feature set operational with native bc-ur console integration
 
 ---
 
@@ -222,10 +233,10 @@
 
 **Purpose**: Tab-specific optimizations and final touches (demo.js already has error handling, caching, debouncing)
 
-- [ ] **T070** [P] Add mobile touch optimizations to `css/tabs.css` (larger tap targets, swipe hints)
-- [ ] **T071** [P] Add tab focus/blur handlers in `js/router.js` (pause animations on blur, resume on focus)
-- [ ] **T072** [P] Add accessibility attributes to `index.html` (ARIA labels for tab navigation, keyboard shortcuts)
-- [ ] **T073** Update README.md with live demo link, feature overview, browser requirements
+- [ ] **T073** [P] Add mobile touch optimizations to `css/tabs.css` (larger tap targets, swipe hints)
+- [ ] **T074** [P] Add tab focus/blur handlers in `js/router.js` (pause animations on blur, resume on focus)
+- [ ] **T075** [P] Add accessibility attributes to `index.html` (ARIA labels for tab navigation, keyboard shortcuts)
+- [ ] **T076** Update README.md with live demo link, feature overview, browser requirements
 
 **Checkpoint**: Feature complete, polished, and ready for deployment
 
@@ -313,36 +324,37 @@ Setup (Phase 1) → Foundational (Phase 2) → [All User Stories Can Start in Pa
 
 ## Task Summary
 
-**Total Tasks**: **70 tasks** (66 base + 2 clipboard + 1 timeout + 1 renumbering correction, reduced from 78 by leveraging existing demo.js)
+**Total Tasks**: **76 tasks** (70 base + 6 new for updated US5 requirements, updated 2025-10-14)
 - Phase 1 (Setup): 5 tasks - Refactor existing HTML into tabs
 - Phase 2 (Foundational): 7 tasks - Extract utilities from demo.js
 - Phase 3 (US1 - Converter): **10 tasks** 🎯 MVP - Refactor existing code (was 15)
 - Phase 4 (US3 - Scanner): 14 tasks (includes clipboard + timeout) - New implementation
 - Phase 5 (US2 - Multi-UR): 14 tasks (includes clipboard) - New implementation
 - Phase 6 (US4 - Registry): 9 tasks - New implementation
-- Phase 7 (US5 - Console): 8 tasks - New implementation
-- Phase 8 (Polish): 4 tasks (T070-T073) - Reduced (demo.js already has error handling, caching, debouncing)
+- Phase 7 (US5 - Console): **11 tasks** (updated 2025-10-14) - Native bc-ur console integration
+- Phase 8 (Polish): 4 tasks (T073-T076) - Cross-cutting concerns
 
 **Existing Code Reuse**:
 - ✅ **demo.js (787 lines)** - Complete FormatConverter implementation
 - ✅ **index.html (455 lines)** - Working converter UI
+- ✅ **js/registry-item-ui.js** - Partial implementation of property inspector (T022b-T022h complete)
 - 🔄 Refactor strategy: Extract → Modularize → Enhance
 
-**Parallelization**: 17 tasks marked [P] (24% of 70 total)
+**Parallelization**: 17 tasks marked [P] (22% of 76 total)
 
 **User Story Distribution**:
 - US1 (Converter): **10 tasks** (refactored from demo.js) - MVP deliverable
 - US2 (Multi-UR Gen): 13 tasks - Independent
 - US3 (Scanner): 12 tasks - Independent (mobile primary)
 - US4 (Registry): 9 tasks - Independent
-- US5 (Console): 8 tasks - Depends on US4 (registry.js)
+- US5 (Console): **11 tasks** (updated 2025-10-14) - Native bc-ur integration with property inspector enhancements
 
 **Independent Test Criteria**:
-- ✅ US1: Paste UR → see all output formats + multi-part assembly
+- ✅ US1: Paste UR → see all output formats + multi-part assembly + wide property inspector for registry items
 - ✅ US2: Input UR → generate multi-UR → see animated QR
 - ✅ US3: Scan QR on mobile → see progress → auto-forward to converter
 - ✅ US4: Browse registry → expand type → view CDDL
-- ✅ US5: Decode UR → use console API → encode/decode registry items
+- ✅ US5: Decode UR → see wide property inspector → click methods (inline execution or console hints) → use native bc-ur classes on console
 
 **Files to Create** (in order):
 1. `demo-backup/` folder (T001 - preserve existing working code)
