@@ -1370,14 +1370,76 @@ kbd {
 }
 
 .console-hint-message {
-    background: #fff3cd;
-    border: 1px solid #ffc107;
-    border-radius: 6px;
-    padding: 10px 12px;
-    margin-bottom: 12px;
-    font-size: 12px;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
     color: #856404;
-    line-height: 1.5;
+    line-height: 1.6;
+}
+
+.console-hint-message .hint-header {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.console-hint-message .hint-body {
+    font-size: 12px;
+}
+
+.console-hint-message .hint-body > p {
+    margin-bottom: 12px;
+}
+
+.console-hint-message .docs-links,
+.console-hint-message .console-examples {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #ffc107;
+}
+
+.console-hint-message .docs-links strong,
+.console-hint-message .console-examples strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #533f03;
+}
+
+.console-hint-message ul {
+    margin: 4px 0 0 20px;
+    padding: 0;
+    list-style: disc;
+}
+
+.console-hint-message li {
+    margin: 4px 0;
+}
+
+.console-hint-message a {
+    color: #667eea;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.console-hint-message a:hover {
+    color: #764ba2;
+}
+
+.console-hint-message code {
+    background: #fff;
+    border: 1px solid #ffc107;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
+    font-size: 11px;
+    color: #667eea;
+    white-space: nowrap;
 }
 
 .console-hint-message kbd {
@@ -1389,6 +1451,7 @@ kbd {
     font-size: 11px;
     color: #24292e;
 }
+
 
 .method-tooltip {
     display: none;

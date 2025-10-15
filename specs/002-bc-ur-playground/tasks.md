@@ -226,7 +226,7 @@
 - [x] **T065** [US5] Add expandable type drawer to converter output in `js/converter.js` (FR-045: show CDDL schema, tag, package, docs link from registry browser - collapsed by default)
 - [x] **T066** [US5] Expose bc-ur library natively on console in `js/converter.js` (FR-047: UR, BytewordEncoding, UrFountainEncoder, UrFountainDecoder globally accessible)
 - [x] **T067** [US5] Expose ur-registry classes on console in `js/converter.js` (FR-048: CryptoHDKey, CryptoSeed, etc. from all 6 loaded packages)
-- [ ] **T068** [US5] Add console tips panel to registry item UI in `js/registry-item-ui.js` (FR-049: show bc-ur library documentation links and usage patterns) - PARTIAL (exists but needs docs links)
+- [x] **T068** [US5] Add console tips panel to registry item UI in `js/registry-item-ui.js` (FR-049: show bc-ur library documentation links and usage patterns)
 - [ ] **T069** [US5] Implement console instance detection in `js/converter.js` (FR-050: detect registry items created in console, offer "Show in Property Inspector" action)
 - [x] **T070** [US5] Add method documentation tooltips to methods panel in `js/registry-item-ui.js` (FR-051: hover to see parameters and return type) - SUPERSEDED by T083 (TypeScript signature tooltips)
 - [x] **T071** [US5] Update HTML for expandable type drawer in `index.html` (add drawer container in converter output section)

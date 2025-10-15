@@ -470,11 +470,32 @@ export const RegistryItemUIMixin = {
 
         let html = '<div class="methods-list">';
 
-        // Console hint message
+        // Console hint message with documentation links
         html += `
             <div class="console-hint-message">
-                💡 <strong>Tip:</strong> Click ▶️ to execute methods and see results in the browser console.
-                Press <kbd>F12</kbd> or <kbd>Ctrl+Shift+I</kbd> to open DevTools.
+                <div class="hint-header">
+                    💡 <strong>Console Playground Tips</strong>
+                </div>
+                <div class="hint-body">
+                    <p>Click ▶️ to execute methods and see results in the browser console. Press <kbd>F12</kbd> or <kbd>Ctrl+Shift+I</kbd> to open DevTools.</p>
+                    <div class="docs-links">
+                        <strong>📚 Documentation:</strong>
+                        <ul>
+                            <li><a href="https://github.com/ngraveio/bc-ur-ts" target="_blank" rel="noopener noreferrer">BC-UR Library (bc-ur-ts)</a></li>
+                            <li><a href="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md" target="_blank" rel="noopener noreferrer">UR Types Specification (BCR-2020-006)</a></li>
+                            <li><a href="https://www.blockchaincommons.com/" target="_blank" rel="noopener noreferrer">Blockchain Commons</a></li>
+                            <li><a href="https://cbor.io/" target="_blank" rel="noopener noreferrer">CBOR Specification</a></li>
+                        </ul>
+                    </div>
+                    <div class="console-examples">
+                        <strong>💻 Quick Examples:</strong>
+                        <ul>
+                            <li><code>window.$lastRegistryItem.toUR().toString()</code> - Get UR string</li>
+                            <li><code>window.$lastDecoded</code> - View raw CBOR data</li>
+                            <li><code>window.UrRegistry.registry</code> - Access registry instance</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         `;
 
