@@ -56,7 +56,8 @@ export class MultiURGenerator {
         totalFrames: 0,
         animationFrameId: null,
         lastFrameTime: 0,
-        frameDelay: 200        // ms between frames (1000/fps)
+        frameDelay: 200,       // ms between frames (1000/fps)
+        wasPausedByRouter: false  // Track if pause was triggered by router
       },
 
       // QR code state
@@ -217,6 +218,21 @@ export class MultiURGenerator {
     if (nextFrameBtn) {
       nextFrameBtn.addEventListener('click', () => this.nextFrame());
     }
+
+    // Listen for pause/resume events from router
+    window.addEventListener('bcur:pauseAnimations', () => {
+      if (this.state.animation.isPlaying) {
+        this.stopAnimation();
+        this.state.animation.wasPausedByRouter = true;
+      }
+    });
+
+    window.addEventListener('bcur:resumeAnimations', () => {
+      if (this.state.animation.wasPausedByRouter) {
+        this.startAnimation();
+        this.state.animation.wasPausedByRouter = false;
+      }
+    });
   }
 
   /**

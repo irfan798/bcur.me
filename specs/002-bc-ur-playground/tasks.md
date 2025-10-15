@@ -240,10 +240,10 @@
 
 **Purpose**: Tab-specific optimizations and final touches (demo.js already has error handling, caching, debouncing)
 
-- [ ] **T073** [P] Add mobile touch optimizations to `css/tabs.css` (larger tap targets, swipe hints)
-- [ ] **T074** [P] Add tab focus/blur handlers in `js/router.js` (pause animations on blur, resume on focus)
-- [ ] **T075** [P] Add accessibility attributes to `index.html` (ARIA labels for tab navigation, keyboard shortcuts)
-- [ ] **T076** Update README.md with live demo link, feature overview, browser requirements
+- [x] **T073** [P] Add mobile touch optimizations to `css/tabs.css` (larger tap targets, swipe hints)
+- [x] **T074** [P] Add tab focus/blur handlers in `js/router.js` (pause animations on blur, resume on focus)
+- [x] **T075** [P] Add accessibility attributes to `index.html` (ARIA labels for tab navigation, keyboard shortcuts)
+- [x] **T076** Update README.md with live demo link, feature overview, browser requirements
 
 **Checkpoint**: Feature complete, polished, and ready for deployment
 
