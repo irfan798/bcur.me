@@ -685,7 +685,7 @@ class RegistryBrowser {
                     if (matchingRow) {
                         // Expand the type to show details if not already expanded
                         if (!this.expandedTypes.has(this.matchedType)) {
-                            this.toggleTypeExpand(this.matchedType);
+                            this.toggleTypeExpansion(this.matchedType);
                         }
                         
                         // Scroll into view
@@ -735,7 +735,7 @@ class RegistryBrowser {
             
             // Expand the type to show details
             if (!this.expandedTypes.has(urType)) {
-                this.toggleTypeExpand(urType);
+                this.toggleTypeExpansion(urType);
             }
 
             // Scroll into view with a slight delay to ensure DOM is ready

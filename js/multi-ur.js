@@ -449,8 +449,10 @@ export class MultiURGenerator {
       // Show controls
       this.showControls();
 
+      // Render initial frame (frame 0)
+      await this.renderCurrentFrame();
+
       // Auto-start animation
-      // Note: In infinite mode, animate() will handle first frame rendering without incrementing
       this.startAnimation();
 
     } catch (error) {
