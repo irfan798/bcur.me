@@ -62,20 +62,6 @@ class Router {
             this.clearOnUnload();
         });
 
-        // Setup visibility change handler to pause animations when tab is not visible
-        document.addEventListener('visibilitychange', () => {
-            this.handleVisibilityChange();
-        });
-
-        // Setup blur/focus handlers for pausing animations
-        window.addEventListener('blur', () => {
-            this.handleWindowBlur();
-        });
-
-        window.addEventListener('focus', () => {
-            this.handleWindowFocus();
-        });
-
         // Activate initial tab based on current hash
         this.handleHashChange();
     }
@@ -179,58 +165,6 @@ class Router {
      */
     getCurrentTab() {
         return this.currentTab || this.defaultTab;
-    }
-
-    /**
-     * Handle Visibility Change
-     *
-     * Pauses animations when page is hidden, resumes when visible.
-     * Uses Page Visibility API for better battery life on mobile.
-     */
-    handleVisibilityChange() {
-        if (document.hidden) {
-            this.pauseAnimations();
-        } else {
-            this.resumeAnimations();
-        }
-    }
-
-    /**
-     * Handle Window Blur
-     *
-     * Pauses animations when window loses focus.
-     */
-    handleWindowBlur() {
-        this.pauseAnimations();
-    }
-
-    /**
-     * Handle Window Focus
-     *
-     * Resumes animations when window gains focus.
-     */
-    handleWindowFocus() {
-        this.resumeAnimations();
-    }
-
-    /**
-     * Pause Animations
-     *
-     * Dispatches custom event that animation-based tabs can listen for.
-     */
-    pauseAnimations() {
-        window.dispatchEvent(new CustomEvent('bcur:pauseAnimations'));
-        console.log('Animations paused (window inactive)');
-    }
-
-    /**
-     * Resume Animations
-     *
-     * Dispatches custom event that animation-based tabs can listen for.
-     */
-    resumeAnimations() {
-        window.dispatchEvent(new CustomEvent('bcur:resumeAnimations'));
-        console.log('Animations resumed (window active)');
     }
 
     /**

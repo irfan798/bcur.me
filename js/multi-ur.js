@@ -19,6 +19,7 @@
 
 import { UR, UrFountainEncoder, UrFountainDecoder } from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9';
 import QRCode from 'https://esm.sh/qrcode@1.5.3';
+import { GIFEncoder, quantize, applyPalette } from 'https://unpkg.com/gifenc';
 import { handleError, updateStatus } from './shared.js';
 
 export class MultiURGenerator {
@@ -40,10 +41,10 @@ export class MultiURGenerator {
         maxFragmentLength: 90,
         minFragmentLength: 10,
         firstSeqNum: 0,
-        repeatAfterRatio: 2,   // 0 = infinite, >0 = finite
+        repeatAfterRatio: 1.5,   // -1 = infinite, 0 = no redundancy, >0 = finite with redundancy
         parts: [],             // Generated UR parts (finite mode)
         totalParts: 0,
-        isInfiniteMode: false,  // repeatAfterRatio === 0
+        isInfiniteMode: false,  // repeatAfterRatio === -1
         originalBlockCount: 0, // Number of original message blocks
         currentFragmentBlocks: [] // Which blocks are in current fragment [0,1,0,1,0] (1=included)
       },
@@ -56,14 +57,13 @@ export class MultiURGenerator {
         totalFrames: 0,
         animationFrameId: null,
         lastFrameTime: 0,
-        frameDelay: 200,       // ms between frames (1000/fps)
-        wasPausedByRouter: false  // Track if pause was triggered by router
+        frameDelay: 200        // ms between frames (1000/fps)
       },
 
       // QR code state
       qr: {
         canvasElement: null,
-        qrSize: 300,           // px
+        qrSize: 600,           // px
         errorCorrectionLevel: 'L',
         currentQRDataURL: null,
         mode: 'alphanumeric'   // Alphanumeric encoding for compact QR
@@ -225,20 +225,11 @@ export class MultiURGenerator {
       nextFrameBtn.addEventListener('click', () => this.nextFrame());
     }
 
-    // Listen for pause/resume events from router
-    window.addEventListener('bcur:pauseAnimations', () => {
-      if (this.state.animation.isPlaying) {
-        this.stopAnimation();
-        this.state.animation.wasPausedByRouter = true;
-      }
-    });
-
-    window.addEventListener('bcur:resumeAnimations', () => {
-      if (this.state.animation.wasPausedByRouter) {
-        this.startAnimation();
-        this.state.animation.wasPausedByRouter = false;
-      }
-    });
+    // Previous Frame button (manual frame stepping - finite mode only)
+    const previousFrameBtn = this.container.querySelector('#previous-frame');
+    if (previousFrameBtn) {
+      previousFrameBtn.addEventListener('click', () => this.previousFrame());
+    }
   }
 
   /**
@@ -330,8 +321,8 @@ export class MultiURGenerator {
    * Update mode UI badge (Finite vs Infinite)
    */
   updateModeUI() {
-    const ratio = parseInt(this.repeatRatioInput?.value || 0);
-    this.state.encoder.isInfiniteMode = (ratio === 0);
+    const ratio = parseFloat(this.repeatRatioInput?.value || 0);
+    this.state.encoder.isInfiniteMode = (ratio === -1);
 
     if (this.state.ui.modeBadge) {
       if (this.state.encoder.isInfiniteMode) {
@@ -340,6 +331,33 @@ export class MultiURGenerator {
       } else {
         this.state.ui.modeBadge.textContent = '# Finite Mode';
         this.state.ui.modeBadge.className = 'mode-badge finite';
+      }
+    }
+
+    // Enable/disable previous frame button based on mode
+    const previousFrameBtn = this.container.querySelector('#previous-frame');
+    if (previousFrameBtn) {
+      if (this.state.encoder.isInfiniteMode) {
+        previousFrameBtn.disabled = true;
+        previousFrameBtn.style.opacity = '0.5';
+        previousFrameBtn.style.cursor = 'not-allowed';
+      } else {
+        previousFrameBtn.disabled = false;
+        previousFrameBtn.style.opacity = '1';
+        previousFrameBtn.style.cursor = 'pointer';
+      }
+    }
+
+    // Clear parts list when switching to infinite mode
+    if (this.state.encoder.isInfiniteMode) {
+      const partsListElement = this.container.querySelector('#parts-list');
+      if (partsListElement) {
+        partsListElement.innerHTML = '';
+        partsListElement.style.display = 'none';
+      }
+      const placeholder = this.container.querySelector('#parts-list-placeholder');
+      if (placeholder) {
+        placeholder.style.display = 'flex';
       }
     }
   }
@@ -393,8 +411,8 @@ export class MultiURGenerator {
       this.state.encoder.maxFragmentLength = parseInt(this.maxFragmentInput.value);
       this.state.encoder.minFragmentLength = parseInt(this.minFragmentInput.value);
       this.state.encoder.firstSeqNum = parseInt(this.firstSeqNumInput.value);
-      this.state.encoder.repeatAfterRatio = parseInt(this.repeatRatioInput.value);
-      this.state.encoder.isInfiniteMode = (this.state.encoder.repeatAfterRatio === 0);
+      this.state.encoder.repeatAfterRatio = parseFloat(this.repeatRatioInput.value);
+      this.state.encoder.isInfiniteMode = (this.state.encoder.repeatAfterRatio === -1);
 
       // Initialize UrFountainEncoder
       this.state.encoder.instance = new UrFountainEncoder(
@@ -402,7 +420,7 @@ export class MultiURGenerator {
         this.state.encoder.maxFragmentLength,
         this.state.encoder.minFragmentLength,
         this.state.encoder.firstSeqNum,
-        this.state.encoder.repeatAfterRatio
+        this.state.encoder.repeatAfterRatio === -1 ? 0 : this.state.encoder.repeatAfterRatio  // Convert -1 to 0 for encoder
       );
 
       console.log('[MultiURGenerator] Encoder initialized:', {
@@ -468,16 +486,36 @@ export class MultiURGenerator {
   }
 
   /**
-   * Display parts list (finite mode only)
+   * Display parts list (finite mode shows all parts, infinite mode shows current UR)
    * FR-017: Finite parts display
    */
   displayPartsList() {
     const placeholder = this.container.querySelector('#parts-list-placeholder');
 
-    if (!this.state.ui.partsListElement || this.state.encoder.isInfiniteMode) {
-      // Show placeholder, hide list
+    if (!this.state.ui.partsListElement) {
+      return;
+    }
+
+    if (this.state.encoder.isInfiniteMode) {
+      // Infinite mode: Show current UR part only
+      if (placeholder) placeholder.style.display = 'none';
+      this.state.ui.partsListElement.style.display = 'block';
+      
+      const currentUR = this.getCurrentURPart();
+      if (currentUR) {
+        let html = '<div class="parts-list-header">Current Part:</div>';
+        html += `<div class="part-item">
+          <code class="part-ur">${currentUR}</code>
+        </div>`;
+        this.state.ui.partsListElement.innerHTML = html;
+      }
+      return;
+    }
+
+    // Finite mode: Show all parts
+    if (this.state.encoder.parts.length === 0) {
       if (placeholder) placeholder.style.display = 'flex';
-      if (this.state.ui.partsListElement) this.state.ui.partsListElement.style.display = 'none';
+      this.state.ui.partsListElement.style.display = 'none';
       return;
     }
 
@@ -571,8 +609,12 @@ export class MultiURGenerator {
       // Update encoder blocks grid
       await this.updateEncoderBlocksGrid(currentPart);
 
-      // Highlight current part in parts list (finite mode)
-      if (!this.state.encoder.isInfiniteMode && this.state.ui.partsListElement) {
+      // Update parts list display
+      if (this.state.encoder.isInfiniteMode) {
+        // In infinite mode, update the current part display
+        this.displayPartsList();
+      } else if (this.state.ui.partsListElement) {
+        // Highlight current part in parts list (finite mode)
         const partItems = this.state.ui.partsListElement.querySelectorAll('.part-item');
         partItems.forEach((item, index) => {
           if (index === this.state.animation.currentPartIndex) {
@@ -835,6 +877,33 @@ export class MultiURGenerator {
   }
 
   /**
+   * Manually go to previous frame (finite mode only)
+   * Only available when not in infinite mode
+   */
+  previousFrame() {
+    if (!this.state.encoder.instance) {
+      console.warn('[MultiURGenerator] No encoder instance - cannot go to previous frame');
+      return;
+    }
+
+    // Previous frame only works in finite mode
+    if (this.state.encoder.isInfiniteMode) {
+      console.warn('[MultiURGenerator] Previous frame not available in infinite mode');
+      return;
+    }
+
+    // Decrement the index
+    this.state.animation.currentPartIndex--;
+    
+    // Loop back if we've gone before the start
+    if (this.state.animation.currentPartIndex < 0) {
+      this.state.animation.currentPartIndex = this.state.encoder.totalParts - 1;
+    }
+    
+    this.renderCurrentFrame();
+  }
+
+  /**
    * Show animation controls
    */
   showControls() {
@@ -947,13 +1016,13 @@ export class MultiURGenerator {
    * Export as animated GIF (finite mode only)
    * FR-021: GIF export
    *
-   * Uses gif.js library to create animated GIF from all QR frames.
+   * Uses gifenc library - a modern, lightweight GIF encoder.
    */
   async exportAsGIF() {
     if (this.state.encoder.isInfiniteMode) {
       updateStatus(
         this.state.ui.statusElement,
-        'Cannot export infinite stream as GIF. Use finite mode (repeat ratio > 0).',
+        'Cannot export infinite stream as GIF. Use finite mode (repeat ratio >= 0).',
         'error'
       );
       return;
@@ -965,26 +1034,104 @@ export class MultiURGenerator {
     }
 
     try {
-      // TODO: Implement GIF export using gif.js library
-      // This requires loading gif.js (https://esm.sh/gif.js@0.2.0)
-      // For now, show a placeholder message
+      console.log('[MultiURGenerator] Starting GIF export with gifenc...');
 
+      // Calculate delay based on current FPS (in milliseconds for gifenc)
+      const fps = this.state.animation.fps || 5;
+      const delay = Math.round(1000 / fps); // Convert FPS to milliseconds
+      console.log('[MultiURGenerator] FPS:', fps, 'Delay:', delay, 'ms');
+
+      // Show progress
       updateStatus(
         this.state.ui.statusElement,
-        'GIF export coming soon! (Task T051 - requires gif.js library integration)',
+        `Generating GIF with ${this.state.encoder.parts.length} frames...`,
         'info'
       );
 
-      // Implementation note:
-      // 1. Import gif.js library
-      // 2. Create GIF encoder with framerate
-      // 3. Render each part to canvas
-      // 4. Add each canvas frame to GIF
-      // 5. Finalize and download GIF file
+      // Create GIF encoder
+      const gif = GIFEncoder();
+      console.log('[MultiURGenerator] GIF encoder created');
+
+      // Create temporary canvas for rendering frames
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = this.state.qr.qrSize;
+      tempCanvas.height = this.state.qr.qrSize;
+      const ctx = tempCanvas.getContext('2d');
+
+      // Render each UR part to a frame
+      for (let i = 0; i < this.state.encoder.parts.length; i++) {
+        const urPart = this.state.encoder.parts[i];
+        const urString = typeof urPart === 'string' ? urPart : urPart.toString();
+        
+        console.log(`[MultiURGenerator] Rendering frame ${i + 1}/${this.state.encoder.parts.length}`);
+        
+        // Generate QR code on temporary canvas
+        await QRCode.toCanvas(
+          tempCanvas,
+          urString,
+          {
+            errorCorrectionLevel: this.state.qr.errorCorrectionLevel,
+            width: this.state.qr.qrSize,
+            margin: 2
+          }
+        );
+
+        // Get image data from canvas
+        const imageData = ctx.getImageData(0, 0, this.state.qr.qrSize, this.state.qr.qrSize);
+        
+        // Quantize colors to create palette (max 256 colors for GIF)
+        const palette = quantize(imageData.data, 256);
+        
+        // Apply palette to get indexed frame data
+        const index = applyPalette(imageData.data, palette);
+        
+        // Add frame to GIF
+        gif.writeFrame(index, this.state.qr.qrSize, this.state.qr.qrSize, {
+          palette,
+          delay
+        });
+
+        // Update progress
+        if (i % 5 === 0 || i === this.state.encoder.parts.length - 1) {
+          updateStatus(
+            this.state.ui.statusElement,
+            `Encoding frame ${i + 1} of ${this.state.encoder.parts.length}...`,
+            'info'
+          );
+        }
+      }
+
+      // Finish encoding
+      gif.finish();
+      console.log('[MultiURGenerator] GIF encoding finished');
+
+      // Get the GIF buffer as Uint8Array
+      const buffer = gif.bytes();
+      
+      // Create blob and download
+      const blob = new Blob([buffer], { type: 'image/gif' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `multi-ur-qr-${this.state.encoder.parts.length}-frames-${fps}fps.gif`;
+      a.click();
+      
+      // Cleanup
+      URL.revokeObjectURL(url);
+      
+      console.log('[MultiURGenerator] GIF download triggered, size:', blob.size, 'bytes');
+      
+      updateStatus(
+        this.state.ui.statusElement,
+        `✅ GIF exported: ${this.state.encoder.parts.length} frames at ${fps} FPS (${(blob.size / 1024).toFixed(1)} KB)`,
+        'success'
+      );
 
     } catch (error) {
       console.error('[MultiURGenerator] GIF export failed:', error);
-      updateStatus(this.state.ui.statusElement, 'GIF export failed: ' + error.message, 'error');
+      console.error('[MultiURGenerator] Error message:', error.message);
+      console.error('[MultiURGenerator] Error stack:', error.stack);
+      updateStatus(this.state.ui.statusElement, 'GIF export failed: ' + (error.message || error.toString()), 'error');
     }
   }
 

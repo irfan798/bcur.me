@@ -254,8 +254,8 @@
                         <input type="number" id="first-seq-num" value="0" min="0" style="width: 100%; padding: 8px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;">
                     </div>
                     <div>
-                        <label for="repeat-after-ratio" style="display: block; margin-bottom: 4px; font-size: 0.9em; color: #586069;">Repeat After Ratio (0 = infinite):</label>
-                        <input type="number" id="repeat-after-ratio" value="2" min="0" max="10" step="0.1" style="width: 100%; padding: 8px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;">
+                        <label for="repeat-after-ratio" style="display: block; margin-bottom: 4px; font-size: 0.9em; color: #586069;">Repeat After Ratio (-1 = infinite, 0 = no redundancy):</label>
+                        <input type="number" id="repeat-after-ratio" value="1.5" min="-1" max="10" step="0.1" style="width: 100%; padding: 8px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;">
                     </div>
                 </div>
 
@@ -263,40 +263,44 @@
                 <div id="param-validation-error" class="status error" style="display: none; margin-top: 12px;"></div>
 
                 <!-- Mode Badge -->
-                <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="margin-top: 12px;">
                     <span id="mode-badge" class="mode-badge finite"># Finite Mode</span>
-                    <button id="generate-multi-ur" class="example-btn" style="padding: 12px 24px; font-size: 1em; min-height: 48px;">🚀 Generate Multi-UR</button>
+                </div>
+                
+                <!-- Generate Button - Centered -->
+                <div style="margin-top: 16px; text-align: center;">
+                    <button id="generate-multi-ur" class="example-btn" style="padding: 16px 32px; font-size: 1.2em; min-height: 60px; font-weight: bold;">Generate Multi-UR & QR</button>
                 </div>
             </div>
 
             <!-- QR Display Section (hidden until generated) -->
             <div id="qr-display-section" style="display: none; margin-top: 24px;">
+                <!-- Encoder Blocks Grid - Moved to top -->
+                <div style="margin-bottom: 24px;">
+                    <div class="section-label">Fragment Composition</div>
+                    <div id="encoder-blocks-grid" class="encoder-blocks-visualization"></div>
+                    
+                    <!-- Grid Legend (same as scanner) -->
+                    <div class="grid-legend" style="margin-top: 12px;">
+                        <div class="legend-item">
+                            <span class="legend-color decoded"></span>
+                            <span>Included in fragment</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color pending"></span>
+                            <span>Not included</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="section-label">Animated QR Code</div>
-                <div style="text-align: center; margin-top: 16px;">
-                    <canvas id="multi-ur-qr-canvas" style="max-width: 100%; border: 2px solid #e1e4e8; border-radius: 8px;"></canvas>
+                <div style="text-align: center; margin-top: 16px; display: flex; justify-content: center;">
+                    <canvas id="multi-ur-qr-canvas" style="width: 90%; max-width: 900px; height: auto; border: 2px solid #e1e4e8; border-radius: 8px;"></canvas>
                 </div>
 
                 <!-- Frame Indicator -->
                 <div id="frame-indicator" style="text-align: center; margin-top: 12px; font-size: 0.95em; color: #586069;">
                     Part 1 of 10
-                </div>
-
-                <!-- Encoder Blocks Grid -->
-                <div style="margin-top: 24px;">
-                    <div class="section-label">Fragment Composition</div>
-                    <div id="encoder-blocks-grid" class="encoder-blocks-visualization"></div>
-                </div>
-
-                <!-- Grid Legend (same as scanner) -->
-                <div class="grid-legend" style="margin-top: 12px;">
-                    <div class="legend-item">
-                        <span class="legend-color decoded"></span>
-                        <span>Included in fragment</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color pending"></span>
-                        <span>Not included</span>
-                    </div>
                 </div>
             </div>
 
@@ -307,6 +311,7 @@
                     <button id="play-animation" class="example-btn" style="min-height: 48px;">▶️ Play</button>
                     <button id="pause-animation" class="example-btn" style="display: none; min-height: 48px;">⏸️ Pause</button>
                     <button id="restart-animation" class="example-btn" style="min-height: 48px;">🔄 Restart</button>
+                    <button id="previous-frame" class="example-btn" style="min-height: 48px;" title="Only available in finite mode">⏮️ Previous Frame</button>
                     <button id="next-frame" class="example-btn" style="min-height: 48px;">⏭️ Next Frame</button>
 
                     <div style="flex: 1; min-width: 200px; display: flex; align-items: center; gap: 8px;">
@@ -328,8 +333,10 @@
                 <textarea
                     id="current-part-output"
                     class="text-area"
+                    style="min-height: fit-content;"
                     readonly
-                    rows="2"
+                    rows="4"
+                    style="resize: vertical;"
                     placeholder="Current UR part will appear here..."
                     spellcheck="false"
                 ></textarea>
@@ -351,16 +358,16 @@
                     <li>Configure encoder parameters:
                         <ul>
                             <li><strong>Max/Min Fragment Length:</strong> Controls QR code size (smaller = more parts)</li>
-                            <li><strong>Repeat After Ratio:</strong> 0 = infinite streaming, &gt;0 = finite with redundancy</li>
+                            <li><strong>Repeat After Ratio:</strong> -1 = infinite streaming, 0 = no redundancy, &gt;0 = finite with redundancy</li>
                         </ul>
                     </li>
-                    <li>Click <strong>Generate Multi-UR</strong> to encode</li>
+                    <li>Click <strong>Generate Multi-UR & QR</strong> to encode</li>
                     <li>Watch animated QR code and fragment composition grid</li>
                     <li>Use controls to adjust animation speed (FPS slider)</li>
                     <li>Copy individual parts, all parts, or export as GIF</li>
                 </ol>
                 <p style="color: #586069; font-size: 0.9em; margin-top: 8px;">
-                    💡 <strong>Tip:</strong> Use infinite mode (ratio=0) for continuous testing, finite mode for complete QR sequences
+                    💡 <strong>Tip:</strong> Use infinite mode (ratio=-1) for continuous testing, finite mode with redundancy for reliable QR scanning
                 </p>
             </div>
         </div>
