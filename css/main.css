@@ -68,22 +68,6 @@ body {
     font-size: 14px;
 }
 
-.keyboard-shortcuts {
-    margin-top: 4px;
-    margin-bottom: 0 !important;
-    opacity: 0.7;
-}
-
-kbd {
-    background: #f6f8fa;
-    border: 1px solid #d1d5da;
-    border-radius: 3px;
-    padding: 2px 6px;
-    font-family: monospace;
-    font-size: 11px;
-    color: #24292e;
-}
-
 .header-links {
     display: flex;
     align-items: center;

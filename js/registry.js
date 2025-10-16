@@ -673,6 +673,27 @@ class RegistryBrowser {
             const { urType, tag, isRegistered } = event.detail;
             this.highlightMatchingType(urType, tag, isRegistered);
         });
+
+        // Listen for tab activation events
+        window.addEventListener('bcur:tabActivated', (event) => {
+            const { tabId } = event.detail;
+            
+            // When registry tab is activated and we have a matched type, scroll to it
+            if (tabId === 'registry' && this.matchedType) {
+                setTimeout(() => {
+                    const matchingRow = this.registryListElement?.querySelector(`[data-ur-type="${this.matchedType}"]`);
+                    if (matchingRow) {
+                        // Expand the type to show details if not already expanded
+                        if (!this.expandedTypes.has(this.matchedType)) {
+                            this.toggleTypeExpand(this.matchedType);
+                        }
+                        
+                        // Scroll into view
+                        matchingRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 300);
+            }
+        });
     }
 
     /**
@@ -697,6 +718,16 @@ class RegistryBrowser {
             return;
         }
 
+        // Check if registry tab is active - if not, wait for tab activation
+        const registryTab = document.getElementById('registry-tab');
+        const isRegistryTabActive = registryTab && !registryTab.classList.contains('hidden');
+        
+        if (!isRegistryTabActive) {
+            // Registry tab is not active, just store the match for later
+            // When user switches to registry tab, the rendering will show the matched state
+            return;
+        }
+
         // Find and highlight matching type
         const matchingRow = this.registryListElement?.querySelector(`[data-ur-type="${urType}"]`);
         if (matchingRow) {
@@ -707,8 +738,10 @@ class RegistryBrowser {
                 this.toggleTypeExpand(urType);
             }
 
-            // Scroll into view
-            matchingRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Scroll into view with a slight delay to ensure DOM is ready
+            setTimeout(() => {
+                matchingRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         }
     }
 

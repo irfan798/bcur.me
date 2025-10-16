@@ -164,6 +164,11 @@ class Router {
             }
         });
 
+        // Dispatch tab activated event
+        window.dispatchEvent(new CustomEvent('bcur:tabActivated', {
+            detail: { tabId }
+        }));
+
         console.log('Activated tab:', tabId);
     }
 
