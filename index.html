@@ -45,29 +45,29 @@
         </div>
 
         <!-- Tab Navigation -->
-        <nav class="tab-nav">
-            <div class="tab-buttons">
-                <button class="tab-button active" data-tab="converter">
-                    <span class="tab-icon">🔄</span>
+        <nav class="tab-nav" role="navigation" aria-label="Main navigation">
+            <div class="tab-buttons" role="tablist" aria-label="BC-UR Playground tabs">
+                <button class="tab-button active" data-tab="converter" role="tab" aria-selected="true" aria-controls="converter-tab" id="tab-converter">
+                    <span class="tab-icon" aria-hidden="true">🔄</span>
                     <span class="tab-label">Converter</span>
                 </button>
-                <button class="tab-button" data-tab="multi-ur">
-                    <span class="tab-icon">📚</span>
+                <button class="tab-button" data-tab="multi-ur" role="tab" aria-selected="false" aria-controls="multi-ur-tab" id="tab-multi-ur">
+                    <span class="tab-icon" aria-hidden="true">📚</span>
                     <span class="tab-label">Multi-UR Generator</span>
                 </button>
-                <button class="tab-button" data-tab="scanner">
-                    <span class="tab-icon">📷</span>
+                <button class="tab-button" data-tab="scanner" role="tab" aria-selected="false" aria-controls="scanner-tab" id="tab-scanner">
+                    <span class="tab-icon" aria-hidden="true">📷</span>
                     <span class="tab-label">QR Scanner</span>
                 </button>
-                <button class="tab-button" data-tab="registry">
-                    <span class="tab-icon">📖</span>
+                <button class="tab-button" data-tab="registry" role="tab" aria-selected="false" aria-controls="registry-tab" id="tab-registry">
+                    <span class="tab-icon" aria-hidden="true">📖</span>
                     <span class="tab-label">Registry Browser</span>
                 </button>
             </div>
         </nav>
 
         <!-- Tab 1: Converter (existing converter content) -->
-        <div class="tab-content active" id="converter-tab">
+        <div class="tab-content active" id="converter-tab" role="tabpanel" aria-labelledby="tab-converter">
             <div class="examples">
                 <div class="examples-label">Quick Examples:</div>
                 <div class="example-buttons">
@@ -82,16 +82,18 @@
 
             <div class="converter-panel">
                 <div class="input-section">
-                    <div class="section-label">Input</div>
+                    <label for="inputText" class="section-label">Input</label>
                     <div class="format-row">
-                        <select id="inputFormat" class="format-select format-select-inline">
+                        <label for="inputFormat" class="visually-hidden">Input format</label>
+                        <select id="inputFormat" class="format-select format-select-inline" aria-label="Select input format">
                             <option value="auto">🔍 Auto-detect format</option>
                             <option value="multiur">📚 Multi-part UR</option>
                             <option value="ur">📄 Single UR</option>
                             <option value="bytewords">📝 Bytewords</option>
                             <option value="hex">🔢 Hex (CBOR)</option>
                         </select>
-                        <select id="inputBytewordsStyle" class="bytewords-style-select" style="display:none;">
+                        <label for="inputBytewordsStyle" class="visually-hidden">Input bytewords style</label>
+                        <select id="inputBytewordsStyle" class="bytewords-style-select" style="display:none;" aria-label="Select input bytewords style">
                             <option value="minimal">Minimal</option>
                             <option value="standard">Standard</option>
                             <option value="uri">URI</option>
@@ -102,7 +104,10 @@
                         class="text-area"
                         placeholder="Paste or type your input here..."
                         spellcheck="false"
+                        aria-label="Input text for conversion"
+                        aria-describedby="input-format-desc"
                     ></textarea>
+                    <div id="input-format-desc" class="visually-hidden">Enter UR, hex, bytewords, or multi-part UR for conversion</div>
                 </div>
 
                 <div class="output-section">
@@ -197,7 +202,7 @@
         </div>
 
         <!-- Tab 2: Multi-UR Generator -->
-        <div class="tab-content hidden" id="multi-ur-tab">
+        <div class="tab-content hidden" id="multi-ur-tab" role="tabpanel" aria-labelledby="tab-multi-ur" aria-hidden="true">
             <div class="section-label">📚 Multi-Part UR Generator & Animated QR</div>
 
             <!-- Status Message -->
@@ -361,7 +366,7 @@
         </div>
 
         <!-- Tab 3: QR Scanner -->
-        <div class="tab-content hidden" id="scanner-tab">
+        <div class="tab-content hidden" id="scanner-tab" role="tabpanel" aria-labelledby="tab-scanner" aria-hidden="true">
             <div class="section-label">📷 QR Code Scanner & Fountain Decoder</div>
             
             <!-- Camera Status -->
@@ -455,7 +460,7 @@
         </div>
 
         <!-- Tab 4: Registry Browser -->
-        <div class="tab-content hidden" id="registry-tab">
+        <div class="tab-content hidden" id="registry-tab" role="tabpanel" aria-labelledby="tab-registry" aria-hidden="true">
             <div class="section-label">📖 Registry Browser & Type Inspection</div>
 
             <!-- Status -->

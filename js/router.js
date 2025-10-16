@@ -62,6 +62,20 @@ class Router {
             this.clearOnUnload();
         });
 
+        // Setup visibility change handler to pause animations when tab is not visible
+        document.addEventListener('visibilitychange', () => {
+            this.handleVisibilityChange();
+        });
+
+        // Setup blur/focus handlers for pausing animations
+        window.addEventListener('blur', () => {
+            this.handleWindowBlur();
+        });
+
+        window.addEventListener('focus', () => {
+            this.handleWindowFocus();
+        });
+
         // Activate initial tab based on current hash
         this.handleHashChange();
     }
@@ -112,7 +126,7 @@ class Router {
      * Activate Tab
      *
      * Updates UI to show selected tab and hide others.
-     * Updates button active states.
+     * Updates button active states and ARIA attributes.
      *
      * @param {string} tabId - Tab identifier
      */
@@ -124,27 +138,36 @@ class Router {
 
         this.currentTab = tabId;
 
-        // Update tab content visibility
+        // Update tab content visibility and ARIA attributes
         this.tabContents.forEach(content => {
             const contentId = content.id.replace('-tab', '');
             if (contentId === tabId) {
                 content.classList.remove('hidden');
                 content.classList.add('active');
+                content.setAttribute('aria-hidden', 'false');
             } else {
                 content.classList.add('hidden');
                 content.classList.remove('active');
+                content.setAttribute('aria-hidden', 'true');
             }
         });
 
-        // Update button active states
+        // Update button active states and ARIA attributes
         this.tabButtons.forEach(button => {
             const buttonTab = button.getAttribute('data-tab');
             if (buttonTab === tabId) {
                 button.classList.add('active');
+                button.setAttribute('aria-selected', 'true');
             } else {
                 button.classList.remove('active');
+                button.setAttribute('aria-selected', 'false');
             }
         });
+
+        // Dispatch tab activated event
+        window.dispatchEvent(new CustomEvent('bcur:tabActivated', {
+            detail: { tabId }
+        }));
 
         console.log('Activated tab:', tabId);
     }
@@ -156,6 +179,58 @@ class Router {
      */
     getCurrentTab() {
         return this.currentTab || this.defaultTab;
+    }
+
+    /**
+     * Handle Visibility Change
+     *
+     * Pauses animations when page is hidden, resumes when visible.
+     * Uses Page Visibility API for better battery life on mobile.
+     */
+    handleVisibilityChange() {
+        if (document.hidden) {
+            this.pauseAnimations();
+        } else {
+            this.resumeAnimations();
+        }
+    }
+
+    /**
+     * Handle Window Blur
+     *
+     * Pauses animations when window loses focus.
+     */
+    handleWindowBlur() {
+        this.pauseAnimations();
+    }
+
+    /**
+     * Handle Window Focus
+     *
+     * Resumes animations when window gains focus.
+     */
+    handleWindowFocus() {
+        this.resumeAnimations();
+    }
+
+    /**
+     * Pause Animations
+     *
+     * Dispatches custom event that animation-based tabs can listen for.
+     */
+    pauseAnimations() {
+        window.dispatchEvent(new CustomEvent('bcur:pauseAnimations'));
+        console.log('Animations paused (window inactive)');
+    }
+
+    /**
+     * Resume Animations
+     *
+     * Dispatches custom event that animation-based tabs can listen for.
+     */
+    resumeAnimations() {
+        window.dispatchEvent(new CustomEvent('bcur:resumeAnimations'));
+        console.log('Animations resumed (window active)');
     }
 
     /**

@@ -56,7 +56,8 @@ export class MultiURGenerator {
         totalFrames: 0,
         animationFrameId: null,
         lastFrameTime: 0,
-        frameDelay: 200        // ms between frames (1000/fps)
+        frameDelay: 200,       // ms between frames (1000/fps)
+        wasPausedByRouter: false  // Track if pause was triggered by router
       },
 
       // QR code state
@@ -81,6 +82,9 @@ export class MultiURGenerator {
 
     // DOM references (initialized on tab activation)
     this.container = null;
+    
+    // Track if listeners have been set up to prevent duplicates
+    this.listenersInitialized = false;
 
     console.log('[MultiURGenerator] Initialized');
   }
@@ -97,8 +101,11 @@ export class MultiURGenerator {
       // Setup UI references
       this.setupUIReferences();
 
-      // Setup event listeners
-      this.setupEventListeners();
+      // Setup event listeners only once
+      if (!this.listenersInitialized) {
+        this.setupEventListeners();
+        this.listenersInitialized = true;
+      }
 
       // Check for forwarded data from converter
       this.checkForwardedData();
@@ -217,6 +224,21 @@ export class MultiURGenerator {
     if (nextFrameBtn) {
       nextFrameBtn.addEventListener('click', () => this.nextFrame());
     }
+
+    // Listen for pause/resume events from router
+    window.addEventListener('bcur:pauseAnimations', () => {
+      if (this.state.animation.isPlaying) {
+        this.stopAnimation();
+        this.state.animation.wasPausedByRouter = true;
+      }
+    });
+
+    window.addEventListener('bcur:resumeAnimations', () => {
+      if (this.state.animation.wasPausedByRouter) {
+        this.startAnimation();
+        this.state.animation.wasPausedByRouter = false;
+      }
+    });
   }
 
   /**
@@ -433,8 +455,10 @@ export class MultiURGenerator {
       // Show controls
       this.showControls();
 
+      // Render initial frame (frame 0)
+      await this.renderCurrentFrame();
+
       // Auto-start animation
-      // Note: In infinite mode, animate() will handle first frame rendering without incrementing
       this.startAnimation();
 
     } catch (error) {
@@ -478,6 +502,8 @@ export class MultiURGenerator {
   getCurrentURPart() {
     if (this.state.encoder.isInfiniteMode) {
       // Infinite mode: Generate next part on demand
+      // Note: In infinite mode, we don't use currentPartIndex for sequencing
+      // The encoder's internal state handles the sequence
       if (!this.state.encoder.instance) {
         return null;
       }
@@ -485,7 +511,7 @@ export class MultiURGenerator {
       // Ensure we return a string - nextPartUr() returns a UR object
       return typeof urPart === 'string' ? urPart : urPart.toString();
     } else {
-      // Finite mode: Get from parts array
+      // Finite mode: Get from parts array using currentPartIndex
       if (this.state.animation.currentPartIndex >= this.state.encoder.parts.length) {
         this.state.animation.currentPartIndex = 0; // Loop back
       }
@@ -750,28 +776,23 @@ export class MultiURGenerator {
 
     // Check if enough time has passed for next frame
     if (elapsed >= this.state.animation.frameDelay) {
-      // In infinite mode with currentPartIndex=0 (first frame), don't increment yet
-      // Just render the first part. Subsequent frames will increment normally.
-      const isFirstFrame = (this.state.animation.currentPartIndex === 0 && 
-                           this.state.encoder.isInfiniteMode);
-      
-      if (!isFirstFrame) {
-        // Advance to next frame for subsequent frames
+      if (this.state.encoder.isInfiniteMode) {
+        // In infinite mode, just render the next frame
+        // getCurrentURPart() will call nextPartUr() which handles sequencing
+        this.renderCurrentFrame();
+        
+        // Increment display counter for UI purposes only
         this.state.animation.currentPartIndex++;
-      }
-
-      // Loop back to 0 if reached end (finite mode only)
-      if (!this.state.encoder.isInfiniteMode &&
-          this.state.animation.currentPartIndex >= this.state.encoder.totalParts) {
-        this.state.animation.currentPartIndex = 0;
-      }
-
-      // Render frame
-      this.renderCurrentFrame();
-
-      // After rendering first frame in infinite mode, increment for next time
-      if (isFirstFrame) {
+      } else {
+        // In finite mode, increment the index and render
         this.state.animation.currentPartIndex++;
+        
+        // Loop back if we've reached the end
+        if (this.state.animation.currentPartIndex >= this.state.encoder.totalParts) {
+          this.state.animation.currentPartIndex = 0;
+        }
+        
+        this.renderCurrentFrame();
       }
 
       // Update last frame time
@@ -793,27 +814,23 @@ export class MultiURGenerator {
       return;
     }
 
-    // Use same logic as animate() - check if this is the first frame
-    const isFirstFrame = (this.state.animation.currentPartIndex === 0 && 
-                         this.state.encoder.isInfiniteMode);
-    
-    if (!isFirstFrame) {
-      // Advance to next frame for subsequent frames
+    if (this.state.encoder.isInfiniteMode) {
+      // In infinite mode, just render the next frame
+      // getCurrentURPart() will call nextPartUr() which handles sequencing
+      this.renderCurrentFrame();
+      
+      // Increment display counter for UI purposes only
       this.state.animation.currentPartIndex++;
-    }
-
-    // Loop back for finite mode
-    if (!this.state.encoder.isInfiniteMode &&
-        this.state.animation.currentPartIndex >= this.state.encoder.totalParts) {
-      this.state.animation.currentPartIndex = 0;
-    }
-
-    // Render the new frame
-    this.renderCurrentFrame();
-
-    // After rendering first frame in infinite mode, increment for next time
-    if (isFirstFrame) {
+    } else {
+      // In finite mode, increment the index and render
       this.state.animation.currentPartIndex++;
+      
+      // Loop back if we've reached the end
+      if (this.state.animation.currentPartIndex >= this.state.encoder.totalParts) {
+        this.state.animation.currentPartIndex = 0;
+      }
+      
+      this.renderCurrentFrame();
     }
   }
 

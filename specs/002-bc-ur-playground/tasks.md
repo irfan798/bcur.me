@@ -187,8 +187,8 @@
 - [x] **T056** [US4] Implement collapsible type list UI in `js/registry.js` (package sections, type rows with tag/URType/description)
 - [x] **T057** [US4] Implement CDDL viewer in `js/registry.js` (expand type → show full CDDL with CSS-based syntax highlighting: keywords in blue, types in green, comments in gray - no external library, keep simple per constitution)
 - [x] **T058** [US4] Implement documentation links in `js/registry.js` (link to official docs when available, null fallback)
-- [ ] **T059** [US4] Implement type matching in `js/registry.js` (highlight registry entry when converter shows matching UR type)
-- [ ] **T060** [US4] Implement unregistered type indicator in `js/registry.js` (show "unregistered" badge for unknown types)
+- [x] **T059** [US4] Implement type matching in `js/registry.js` (highlight registry entry when converter shows matching UR type)
+- [x] **T060** [US4] Implement unregistered type indicator in `js/registry.js` (show "unregistered" badge for unknown types)
 - [x] **T061** [US4] Add registry browser tab HTML structure to `index.html` (package sections, type list, CDDL viewer, search/filter)
 
 **Checkpoint**: User Story 4 complete - registry browsing fully functional
@@ -226,7 +226,7 @@
 - [x] **T065** [US5] Add expandable type drawer to converter output in `js/converter.js` (FR-045: show CDDL schema, tag, package, docs link from registry browser - collapsed by default)
 - [x] **T066** [US5] Expose bc-ur library natively on console in `js/converter.js` (FR-047: UR, BytewordEncoding, UrFountainEncoder, UrFountainDecoder globally accessible)
 - [x] **T067** [US5] Expose ur-registry classes on console in `js/converter.js` (FR-048: CryptoHDKey, CryptoSeed, etc. from all 6 loaded packages)
-- [ ] **T068** [US5] Add console tips panel to registry item UI in `js/registry-item-ui.js` (FR-049: show bc-ur library documentation links and usage patterns) - PARTIAL (exists but needs docs links)
+- [x] **T068** [US5] Add console tips panel to registry item UI in `js/registry-item-ui.js` (FR-049: show bc-ur library documentation links and usage patterns)
 - [ ] **T069** [US5] Implement console instance detection in `js/converter.js` (FR-050: detect registry items created in console, offer "Show in Property Inspector" action)
 - [x] **T070** [US5] Add method documentation tooltips to methods panel in `js/registry-item-ui.js` (FR-051: hover to see parameters and return type) - SUPERSEDED by T083 (TypeScript signature tooltips)
 - [x] **T071** [US5] Update HTML for expandable type drawer in `index.html` (add drawer container in converter output section)
@@ -240,10 +240,10 @@
 
 **Purpose**: Tab-specific optimizations and final touches (demo.js already has error handling, caching, debouncing)
 
-- [ ] **T073** [P] Add mobile touch optimizations to `css/tabs.css` (larger tap targets, swipe hints)
-- [ ] **T074** [P] Add tab focus/blur handlers in `js/router.js` (pause animations on blur, resume on focus)
-- [ ] **T075** [P] Add accessibility attributes to `index.html` (ARIA labels for tab navigation, keyboard shortcuts)
-- [ ] **T076** Update README.md with live demo link, feature overview, browser requirements
+- [x] **T073** [P] Add mobile touch optimizations to `css/tabs.css` (larger tap targets, swipe hints)
+- [x] **T074** [P] Add tab focus/blur handlers in `js/router.js` (pause animations on blur, resume on focus)
+- [x] **T075** [P] Add accessibility attributes to `index.html` (ARIA labels for tab navigation, keyboard shortcuts)
+- [x] **T076** Update README.md with live demo link, feature overview, browser requirements
 
 **Checkpoint**: Feature complete, polished, and ready for deployment
 
