@@ -82,6 +82,9 @@ export class MultiURGenerator {
 
     // DOM references (initialized on tab activation)
     this.container = null;
+    
+    // Track if listeners have been set up to prevent duplicates
+    this.listenersInitialized = false;
 
     console.log('[MultiURGenerator] Initialized');
   }
@@ -98,8 +101,11 @@ export class MultiURGenerator {
       // Setup UI references
       this.setupUIReferences();
 
-      // Setup event listeners
-      this.setupEventListeners();
+      // Setup event listeners only once
+      if (!this.listenersInitialized) {
+        this.setupEventListeners();
+        this.listenersInitialized = true;
+      }
 
       // Check for forwarded data from converter
       this.checkForwardedData();

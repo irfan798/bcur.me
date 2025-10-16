@@ -73,6 +73,9 @@ export class QRScanner {
     // DOM references (initialized on tab activation)
     this.container = null;
     
+    // Track if listeners have been set up to prevent duplicates
+    this.listenersInitialized = false;
+    
     console.log('[QRScanner] Initialized');
   }
   
@@ -91,8 +94,11 @@ export class QRScanner {
       // Initialize decoder
       this.resetDecoder();
       
-      // Setup event listeners
-      this.setupEventListeners();
+      // Setup event listeners only once
+      if (!this.listenersInitialized) {
+        this.setupEventListeners();
+        this.listenersInitialized = true;
+      }
       
       console.log('[QRScanner] Initialization complete');
       
