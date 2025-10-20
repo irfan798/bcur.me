@@ -3,452 +3,540 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BC-UR Live Format Converter</title>
-    <style>
-        /* Minimal CSS for clean, professional look */
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0;
-        }
-        
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .container { 
-            max-width: 1600px; 
-            width: 100%;
-            background: white; 
-            padding: 40px; 
-            border-radius: 12px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        
-        .header { 
-            text-align: center; 
-            margin-bottom: 30px;
-            color: #333;
-        }
-        
-        .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-        }
-        
-        .header p {
-            color: #586069;
-            margin-top: 8px;
-            font-size: 14px;
-        }
-        
-        .converter-panel { 
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px; 
-            margin-bottom: 25px; 
-        }
-        
-        @media (max-width: 768px) {
-            .converter-panel {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .input-section, .output-section { 
-            position: relative;
-        }
-        
-        .section-label {
-            font-weight: 600;
-            color: #24292e;
-            margin-bottom: 8px;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .format-select { 
-            width: 100%; 
-            padding: 10px 12px; 
-            margin-bottom: 12px; 
-            border: 2px solid #e1e4e8;
-            border-radius: 6px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-        
-        .format-select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .text-area { 
-            width: 100%; 
-            min-height: 450px; 
-            padding: 12px; 
-            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace; 
-            font-size: 13px;
-            line-height: 1.5;
-            border: 2px solid #e1e4e8;
-            border-radius: 6px;
-            resize: vertical;
-            transition: border-color 0.2s;
-        }
-        
-        .text-area:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .text-area[readonly] {
-            background: #f6f8fa;
-            cursor: default;
-        }
-        
-        .pipeline { 
-            background: #f6f8fa; 
-            padding: 15px 20px; 
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .pipeline-header {
-            font-weight: 600;
-            color: #586069;
-            margin-bottom: 10px;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .pipeline-flow {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-        
-        .pipeline-step { 
-            display: inline-block; 
-            padding: 6px 12px; 
-            padding-bottom: 10px; /* Extra space for underline */
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .pipeline-step.success { 
-            background: #28a745; 
-            color: white;
-            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
-        }
-        
-        .pipeline-step.error { 
-            background: #dc3545; 
-            color: white;
-            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
-            animation: shake 0.5s;
-        }
-        
-        .pipeline-step.inactive { 
-            background: #e1e4e8; 
-            color: #959da5;
-        }
-        
-        .pipeline-step.start::after,
-        .pipeline-step.end::after {
-            content: '';
-            position: absolute;
-            bottom: -3px;
-            left: 15%;
-            right: 15%;
-            height: 3px;
-            border-radius: 1.5px;
-        }
-        
-        .pipeline-step.start::after {
-            background: #667eea;
-            box-shadow: 0 1px 3px rgba(102, 126, 234, 0.8);
-        }
-        
-        .pipeline-step.end::after {
-            background: #667eea;
-            box-shadow: 0 1px 3px rgba(102, 126, 234, 0.8);
-        }
-        
-        .pipeline-step.end.inactive::after {
-            background: #959da5;
-            box-shadow: 0 1px 3px rgba(149, 157, 165, 0.5);
-        }
-        
-        .pipeline-step.end.error::after {
-            background: #dc3545;
-            box-shadow: 0 1px 3px rgba(220, 53, 69, 0.8);
-        }
-        
-        .pipeline-arrow {
-            color: #959da5;
-            font-size: 14px;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        
-        .status { 
-            padding: 12px 16px; 
-            border-radius: 6px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .status.success { 
-            background: #d4edda; 
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status.error { 
-            background: #f8d7da; 
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .status-icon {
-            font-size: 18px;
-        }
-        
-        /* Loading spinner */
-        .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .examples {
-            margin-bottom: 20px;
-        }
-
-        .examples-label {
-            font-weight: 600;
-            color: #24292e;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-
-        .example-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .example-btn {
-            padding: 6px 12px;
-            background: white;
-            border: 2px solid #e1e4e8;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .example-btn:hover {
-            border-color: #667eea;
-            background: #f6f8fa;
-        }
-
-        .copy-btn {
-            position: absolute;
-            top: 35px;
-            right: 8px;
-            padding: 6px 10px;
-            background: white;
-            border: 1px solid #e1e4e8;
-            border-radius: 4px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-            z-index: 10;
-        }
-
-        .copy-btn:hover {
-            background: #f6f8fa;
-            border-color: #667eea;
-        }
-
-        .bytewords-style-select {
-            display: inline-block;
-            width: auto;
-            padding: 10px 12px; /* match .format-select */
-            margin-left: 8px;
-            border: 2px solid #e1e4e8;
-            border-radius: 6px;
-            font-size: 14px; /* match .format-select */
-            background: white;
-            cursor: pointer;
-            transition: border-color 0.2s;
-            height: 42px; /* enforce consistent rendered height */
-            line-height: 20px;
-        }
-
-        .bytewords-style-select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .format-row {
-            display: flex;
-            align-items: stretch; /* stretch children to same height */
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .format-select-inline {
-            flex: 1;
-            margin-bottom: 0;
-        }
-
-        /* Unified control sizing */
-        .format-row > select,
-        .format-row > button,
-        .format-row > .bytewords-style-select {
-            height: 42px; /* matches explicit bytewords style select */
-        }
-
-        .format-row > button.example-btn {
-            display: flex;
-            align-items: center;
-            line-height: 20px;
-            font-size: 14px;
-            padding: 10px 16px;
-        }
-    </style>
+    <title>BC-UR Playground</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/tabs.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔄 BC-UR Live Format Converter</h1>
-            <p>Real-time conversion between UR, Bytewords, Hex, and CBOR formats</p>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>🔄 BC-UR Playground</h1>
+                    <p>Explore Uniform Resources, multi-part encoding, animated QR codes, and CBOR registry types</p>
+                </div>
+                <div class="header-links">
+                    <div class="made-by">
+                        <span class="made-by-text">Made by <a href="https://github.com/irfan798" target="_blank" rel="noopener noreferrer" class="author-link">irfan798</a></span>
+                        <a href="https://github.com/irfan798" target="_blank" rel="noopener noreferrer" class="social-link github" title="GitHub - @irfan798">
+                            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/irfan798/" target="_blank" rel="noopener noreferrer" class="social-link linkedin" title="LinkedIn - @irfan798">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                        <a href="https://medium.com/@irfanbilaloglu" target="_blank" rel="noopener noreferrer" class="social-link medium" title="Medium - @irfanbilaloglu">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/>
+                            </svg>
+                        </a>
+                    </div>
+                    <a href="https://github.com/irfan798/bcur.me" target="_blank" rel="noopener noreferrer" class="project-link" title="View project on GitHub">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                        <span>bcur.me</span>
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <div class="examples">
-            <div class="examples-label">Quick Examples:</div>
-            <div class="example-buttons">
-                <button class="example-btn" data-example="hex">Hex Example</button>
-                <button class="example-btn" data-example="ur">UR Example</button>
-                <button class="example-btn" data-example="bytewords">Bytewords Example</button>
-                <button class="example-btn" data-example="multiur">Multi-part UR</button>
+        <!-- Tab Navigation -->
+        <nav class="tab-nav" role="navigation" aria-label="Main navigation">
+            <div class="tab-buttons" role="tablist" aria-label="BC-UR Playground tabs">
+                <button class="tab-button active" data-tab="converter" role="tab" aria-selected="true" aria-controls="converter-tab" id="tab-converter">
+                    <span class="tab-icon" aria-hidden="true">🔄</span>
+                    <span class="tab-label">Converter</span>
+                </button>
+                <button class="tab-button" data-tab="multi-ur" role="tab" aria-selected="false" aria-controls="multi-ur-tab" id="tab-multi-ur">
+                    <span class="tab-icon" aria-hidden="true">📚</span>
+                    <span class="tab-label">Multi-UR Generator</span>
+                </button>
+                <button class="tab-button" data-tab="scanner" role="tab" aria-selected="false" aria-controls="scanner-tab" id="tab-scanner">
+                    <span class="tab-icon" aria-hidden="true">📷</span>
+                    <span class="tab-label">QR Scanner</span>
+                </button>
+                <button class="tab-button" data-tab="registry" role="tab" aria-selected="false" aria-controls="registry-tab" id="tab-registry">
+                    <span class="tab-icon" aria-hidden="true">📖</span>
+                    <span class="tab-label">Registry Browser</span>
+                </button>
             </div>
-        </div>
-        
-        <div class="converter-panel">
-            <div class="input-section">
-                <div class="section-label">Input</div>
-                <div class="format-row">
-                    <select id="inputFormat" class="format-select format-select-inline">
-                        <option value="auto">🔍 Auto-detect format</option>
-                        <option value="multiur">📚 Multi-part UR</option>
-                        <option value="ur">📄 Single UR</option>
-                        <option value="bytewords">📝 Bytewords</option>
-                        <option value="hex">🔢 Hex (CBOR)</option>
-                    </select>
-                    <select id="inputBytewordsStyle" class="bytewords-style-select" style="display:none;">
-                        <option value="minimal">Minimal</option>
-                        <option value="standard">Standard</option>
-                        <option value="uri">URI</option>
-                    </select>
+        </nav>
+
+        <!-- Tab 1: Converter (existing converter content) -->
+        <div class="tab-content active" id="converter-tab" role="tabpanel" aria-labelledby="tab-converter">
+            <div class="examples">
+                <div class="examples-label">Quick Examples:</div>
+                <div class="example-buttons">
+                    <button class="example-btn" data-example="hex">Hex Example</button>
+                    <button class="example-btn" data-example="ur">UR Example</button>
+                    <button class="example-btn" data-example="bytewords">Bytewords Example</button>
+                    <button class="example-btn" data-example="multiur">Multi-part UR</button>
+                    <button class="example-btn" data-example="detailed-account">Detailed Account</button>
+                    <button class="example-btn" data-example="portfolio">Portfolio (complex-ur)</button>
                 </div>
-                <textarea 
-                    id="inputText" 
-                    class="text-area" 
-                    placeholder="Paste or type your input here..."
-                    spellcheck="false"
-                ></textarea>
             </div>
-            
-            <div class="output-section">
-                <div class="section-label">Output</div>
-                <div class="format-row">
-                    <select id="outputFormat" class="format-select format-select-inline">
-                        <option value="ur">📄 Single UR</option>
-                        <option value="bytewords">📝 Bytewords</option>
-                        <option value="hex">🔢 Hex (CBOR)</option>
-                        <option value="decoded-json">📊 Decoded CBOR (JSON)</option>
-                        <option value="decoded-diagnostic">📋 Decoded CBOR (Diagnostic)</option>
-                        <option value="decoded-commented">💬 Decoded CBOR (Commented)</option>
-                        <option value="decoded-js">🔧 Decoded CBOR (JavaScript)</option>
-                    </select>
-                    <select id="outputBytewordsStyle" class="bytewords-style-select" style="display:none;">
-                        <option value="minimal">Minimal</option>
-                        <option value="standard">Standard</option>
-                        <option value="uri">URI</option>
-                    </select>
-                    <button id="copyBtn" class="example-btn" style="margin-left:8px; padding:10px 14px; height:42px;">📋 Copy</button>
+
+            <div class="converter-panel">
+                <div class="input-section">
+                    <label for="inputText" class="section-label">Input</label>
+                    <div class="format-row">
+                        <label for="inputFormat" class="visually-hidden">Input format</label>
+                        <select id="inputFormat" class="format-select format-select-inline" aria-label="Select input format">
+                            <option value="auto">🔍 Auto-detect format</option>
+                            <option value="multiur">📚 Multi-part UR</option>
+                            <option value="ur">📄 Single UR</option>
+                            <option value="bytewords">📝 Bytewords</option>
+                            <option value="hex">🔢 Hex (CBOR)</option>
+                        </select>
+                        <label for="inputBytewordsStyle" class="visually-hidden">Input bytewords style</label>
+                        <select id="inputBytewordsStyle" class="bytewords-style-select" style="display:none;" aria-label="Select input bytewords style">
+                            <option value="minimal">Minimal</option>
+                            <option value="standard">Standard</option>
+                            <option value="uri">URI</option>
+                        </select>
+                    </div>
+                    <textarea
+                        id="inputText"
+                        class="text-area"
+                        placeholder="Paste or type your input here..."
+                        spellcheck="false"
+                        aria-label="Input text for conversion"
+                        aria-describedby="input-format-desc"
+                    ></textarea>
+                    <div id="input-format-desc" class="visually-hidden">Enter UR, hex, bytewords, or multi-part UR for conversion</div>
                 </div>
-                <!-- UR Type override / helper (appears only when needed) -->
-                <div id="urTypeContainer" style="display:none; margin-bottom:12px; position:relative;">
-                    <input id="urTypeInput" type="text" placeholder="unknown-tag" style="width:100%; padding:8px 32px 8px 10px; border:2px solid #e1e4e8; border-radius:6px; font-size:13px;" />
-                    <span id="urTypeIndicator" style="display:none; position:absolute; top:8px; right:10px; font-size:15px; user-select:none;">✓</span>
-                    <div style="display:flex; justify-content:space-between; margin-top:4px;">
-                        <small id="urTypeHint" style="color:#586069; font-size:11px;">Provide UR type (auto when CBOR tag known)</small>
-                        <small id="urTypeAutoBadge" style="display:none; background:#e1f5e6; color:#0a7a25; padding:2px 6px; border-radius:12px; font-size:11px;">Auto-detected</small>
+
+                <div class="output-section">
+                    <div class="section-label">Output</div>
+                    <div class="format-row">
+                        <select id="outputFormat" class="format-select format-select-inline">
+                            <option value="ur">📄 Single UR</option>
+                            <option value="bytewords">📝 Bytewords</option>
+                            <option value="hex">🔢 Hex (CBOR)</option>
+                            <option value="decoded-json">📊 Decoded CBOR (JSON)</option>
+                            <option value="decoded-diagnostic">📋 Decoded CBOR (Diagnostic)</option>
+                            <option value="decoded-commented">💬 Decoded CBOR (Commented)</option>
+                            <option value="decoded-js">🔧 Decoded CBOR (JavaScript)</option>
+                        </select>
+                        <select id="outputBytewordsStyle" class="bytewords-style-select" style="display:none;">
+                            <option value="minimal">Minimal</option>
+                            <option value="standard">Standard</option>
+                            <option value="uri">URI</option>
+                        </select>
+                        <button id="copyBtn" class="example-btn" style="margin-left:8px; padding:10px 14px; height:42px;">📋 Copy</button>
+                        <button id="sendToMultiUR" class="example-btn" style="margin-left:8px; padding:10px 14px; height:42px;">📚 Send to Multi-UR</button>
+                    </div>
+                    <!-- UR Type override / helper (appears only when needed) -->
+                    <div id="urTypeContainer" style="display:none; margin-bottom:12px; position:relative;">
+                        <input id="urTypeInput" type="text" placeholder="unknown-tag" style="width:100%; padding:8px 32px 8px 10px; border:2px solid #e1e4e8; border-radius:6px; font-size:13px;" />
+                        <span id="urTypeIndicator" style="display:none; position:absolute; top:8px; right:10px; font-size:15px; user-select:none;">✓</span>
+                        <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                            <small id="urTypeHint" style="color:#586069; font-size:11px;">Provide UR type (auto when CBOR tag known)</small>
+                            <small id="urTypeAutoBadge" style="display:none; background:#e1f5e6; color:#0a7a25; padding:2px 6px; border-radius:12px; font-size:11px;">Auto-detected</small>
+                        </div>
+                    </div>
+                    <textarea
+                        id="outputText"
+                        class="text-area"
+                        readonly
+                        placeholder="Converted output will appear here..."
+                        spellcheck="false"
+                    ></textarea>
+
+                    <!-- Placeholder for registry UI - will render below -->
+                    <div id="registry-ui-placeholder"></div>
+                </div>
+            </div>
+
+            <!-- Registry Item UI (Full Width Layout) -->
+            <div id="registry-item-ui" style="display: none; margin-top: 24px;">
+                <!-- Property Inspector (Full Width with integrated methods) -->
+                <div id="property-inspector-panel" class="registry-panel property-inspector-wide">
+                    <div class="panel-header">
+                        <span>🔍 Property Inspector</span>
+                        <div class="inspector-actions">
+                            <button class="copy-option-btn compact" data-format="json" title="Copy as JSON">📋 JSON</button>
+                            <button class="copy-option-btn compact" data-format="hex" title="Copy as Hex">📋 Hex</button>
+                            <button class="copy-option-btn compact" data-format="ur" title="Copy as UR">📋 UR</button>
+                            <button class="copy-option-btn compact" data-format="code" title="Copy Registry Item Code">📋 Code</button>
+                        </div>
+                    </div>
+                    
+                    <div class="inspector-content">
+                        <!-- Tree View with integrated method execution results -->
+                        <div id="tree-view-content" class="tree-view-content">
+                            <!-- Tree view will be rendered here -->
+                        </div>
+                        
+                        <!-- Methods Panel (hidden, content integrated into tree view) -->
+                        <div id="methods-content" style="display: none;">
+                            <!-- Methods list metadata (not displayed, used for execution) -->
+                        </div>
                     </div>
                 </div>
-                <textarea 
-                    id="outputText" 
-                    class="text-area" 
-                    readonly 
-                    placeholder="Converted output will appear here..."
+            </div>
+
+            <div class="pipeline" id="pipeline">
+                <div class="pipeline-header">Conversion Pipeline Status</div>
+                <div class="pipeline-flow">
+                    <span class="pipeline-step inactive" data-step="multiur">Multi-UR</span>
+                    <span class="pipeline-arrow">→</span>
+                    <span class="pipeline-step inactive" data-step="ur">UR</span>
+                    <span class="pipeline-arrow">→</span>
+                    <span class="pipeline-step inactive" data-step="bytewords">Bytewords</span>
+                    <span class="pipeline-arrow">→</span>
+                    <span class="pipeline-step inactive" data-step="hex">Hex</span>
+                    <span class="pipeline-arrow">→</span>
+                    <span class="pipeline-step inactive" data-step="decoded">Decoded</span>
+                </div>
+            </div>
+
+            <div class="status success" id="status">
+                <span class="status-icon">ℹ️</span>
+                <span>Ready for input</span>
+            </div>
+        </div>
+
+        <!-- Tab 2: Multi-UR Generator -->
+        <div class="tab-content hidden" id="multi-ur-tab" role="tabpanel" aria-labelledby="tab-multi-ur" aria-hidden="true">
+            <div class="section-label">📚 Multi-Part UR Generator & Animated QR</div>
+
+            <!-- Status Message -->
+            <div id="multi-ur-status" class="status">
+                <span class="status-icon">ℹ️</span>
+                <span>Enter a UR or hex string to generate multi-part URs</span>
+            </div>
+
+            <!-- Input Section with Parts List Side-by-Side -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                <!-- Left: Input -->
+                <div class="input-section" style="display: flex; flex-direction: column;">
+                    <div class="section-label">Input UR or Hex</div>
+                    <textarea
+                        id="multi-ur-input"
+                        class="text-area"
+                        style="flex: 1; min-height: 200px; resize: vertical;"
+                        placeholder="Paste UR (ur:...) or hex string here, or receive from Converter tab..."
+                        spellcheck="false"
+                    ></textarea>
+                </div>
+
+                <!-- Right: All Parts List (finite mode only) -->
+                <div class="output-section" style="display: flex; flex-direction: column;">
+                    <div class="section-label">All Parts (Finite Mode)</div>
+                    <div id="parts-list-output" style="display: none; flex: 1; min-height: 200px; max-height: 400px; overflow-y: auto; border: 1px solid #e1e4e8; border-radius: 6px; padding: 12px; background: white;">
+                        <!-- Parts list will be populated here -->
+                    </div>
+                    <div id="parts-list-placeholder" style="flex: 1; min-height: 200px; display: flex; align-items: center; justify-content: center; border: 2px dashed #e1e4e8; border-radius: 6px; color: #586069; font-size: 0.9em;">
+                        Generate parts to see list
+                    </div>
+                </div>
+            </div>
+
+            <!-- Encoder Parameters Section -->
+            <div class="encoder-params-section" style="margin-top: 24px;">
+                <div class="section-label">Encoder Parameters</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 12px;">
+                    <div>
+                        <label for="max-fragment-length" style="display: block; margin-bottom: 4px; font-size: 0.9em; color: #586069;">Max Fragment Length:</label>
+                        <input type="number" id="max-fragment-length" value="90" min="10" max="2000" style="width: 100%; padding: 8px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label for="min-fragment-length" style="display: block; margin-bottom: 4px; font-size: 0.9em; color: #586069;">Min Fragment Length:</label>
+                        <input type="number" id="min-fragment-length" value="10" min="1" max="1000" style="width: 100%; padding: 8px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label for="first-seq-num" style="display: block; margin-bottom: 4px; font-size: 0.9em; color: #586069;">First Sequence Number:</label>
+                        <input type="number" id="first-seq-num" value="0" min="0" style="width: 100%; padding: 8px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label for="repeat-after-ratio" style="display: block; margin-bottom: 4px; font-size: 0.9em; color: #586069;">Repeat After Ratio (-1 = infinite, 0 = no redundancy):</label>
+                        <input type="number" id="repeat-after-ratio" value="1.5" min="-1" max="10" step="0.1" style="width: 100%; padding: 8px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;">
+                    </div>
+                </div>
+
+                <!-- Parameter Validation Error -->
+                <div id="param-validation-error" class="status error" style="display: none; margin-top: 12px;"></div>
+
+                <!-- Mode Badge -->
+                <div style="margin-top: 12px;">
+                    <span id="mode-badge" class="mode-badge finite"># Finite Mode</span>
+                </div>
+                
+                <!-- Generate Button - Centered -->
+                <div style="margin-top: 16px; text-align: center;">
+                    <button id="generate-multi-ur" class="example-btn" style="padding: 16px 32px; font-size: 1.2em; min-height: 60px; font-weight: bold;">Generate Multi-UR & QR</button>
+                </div>
+            </div>
+
+            <!-- QR Display Section (hidden until generated) -->
+            <div id="qr-display-section" style="display: none; margin-top: 24px;">
+                <!-- Encoder Blocks Grid - Moved to top -->
+                <div style="margin-bottom: 24px;">
+                    <div class="section-label">Fragment Composition</div>
+                    <div id="encoder-blocks-grid" class="encoder-blocks-visualization"></div>
+                    
+                    <!-- Grid Legend (same as scanner) -->
+                    <div class="grid-legend" style="margin-top: 12px;">
+                        <div class="legend-item">
+                            <span class="legend-color decoded"></span>
+                            <span>Included in fragment</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color pending"></span>
+                            <span>Not included</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-label">Animated QR Code</div>
+                <div style="text-align: center; margin-top: 16px; display: flex; justify-content: center;">
+                    <canvas id="multi-ur-qr-canvas" style="width: 90%; max-width: 900px; height: auto; border: 2px solid #e1e4e8; border-radius: 8px;"></canvas>
+                </div>
+
+                <!-- Frame Indicator -->
+                <div id="frame-indicator" style="text-align: center; margin-top: 12px; font-size: 0.95em; color: #586069;">
+                    Part 1 of 10
+                </div>
+            </div>
+
+            <!-- Animation Controls (hidden until generated) -->
+            <div id="animation-controls" style="display: none; margin-top: 24px;">
+                <div class="section-label">Animation Controls</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 12px;">
+                    <button id="play-animation" class="example-btn" style="min-height: 48px;">▶️ Play</button>
+                    <button id="pause-animation" class="example-btn" style="display: none; min-height: 48px;">⏸️ Pause</button>
+                    <button id="restart-animation" class="example-btn" style="min-height: 48px;">🔄 Restart</button>
+                    <button id="previous-frame" class="example-btn" style="min-height: 48px;" title="Only available in finite mode">⏮️ Previous Frame</button>
+                    <button id="next-frame" class="example-btn" style="min-height: 48px;">⏭️ Next Frame</button>
+
+                    <div style="flex: 1; min-width: 200px; display: flex; align-items: center; gap: 8px;">
+                        <label for="fps-slider" style="font-size: 0.9em; color: #586069; white-space: nowrap;">FPS:</label>
+                        <input type="range" id="fps-slider" min="1" max="30" value="5" style="flex: 1; min-width: 100px;">
+                        <span id="fps-value" style="font-size: 0.9em; color: #586069; min-width: 30px;">5</span>
+                    </div>
+                </div>
+
+                <!-- Progress Bar (finite mode only) -->
+                <div class="progress-bar-container" style="margin-top: 12px;">
+                    <div id="animation-progress-bar" class="progress-bar"></div>
+                </div>
+            </div>
+
+            <!-- Output Section (hidden until generated) -->
+            <div id="multi-ur-output" style="display: none; margin-top: 24px;">
+                <div class="section-label">Current Part Output</div>
+                <textarea
+                    id="current-part-output"
+                    class="text-area"
+                    style="min-height: fit-content;"
+                    readonly
+                    rows="4"
+                    style="resize: vertical;"
+                    placeholder="Current UR part will appear here..."
                     spellcheck="false"
                 ></textarea>
+
+                <!-- Copy & Export Buttons -->
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+                    <button id="copy-current-part" class="example-btn" style="min-height: 48px;">📋 Copy Current Part</button>
+                    <button id="copy-all-parts" class="example-btn" style="min-height: 48px;">📋 Copy All Parts</button>
+                    <button id="copy-qr-png" class="example-btn" style="min-height: 48px;">🖼️ Copy QR as PNG</button>
+                    <button id="export-gif" class="example-btn" style="min-height: 48px;" title="Export as animated GIF (finite mode only)">💾 Export GIF</button>
+                </div>
+            </div>
+
+            <!-- Usage Instructions -->
+            <div class="usage-instructions" style="margin-top: 32px;">
+                <div class="section-label">📝 How to Use</div>
+                <ol>
+                    <li>Enter a UR (ur:...) or hex string, or receive from Converter tab</li>
+                    <li>Configure encoder parameters:
+                        <ul>
+                            <li><strong>Max/Min Fragment Length:</strong> Controls QR code size (smaller = more parts)</li>
+                            <li><strong>Repeat After Ratio:</strong> -1 = infinite streaming, 0 = no redundancy, &gt;0 = finite with redundancy</li>
+                        </ul>
+                    </li>
+                    <li>Click <strong>Generate Multi-UR & QR</strong> to encode</li>
+                    <li>Watch animated QR code and fragment composition grid</li>
+                    <li>Use controls to adjust animation speed (FPS slider)</li>
+                    <li>Copy individual parts, all parts, or export as GIF</li>
+                </ol>
+                <p style="color: #586069; font-size: 0.9em; margin-top: 8px;">
+                    💡 <strong>Tip:</strong> Use infinite mode (ratio=-1) for continuous testing, finite mode with redundancy for reliable QR scanning
+                </p>
             </div>
         </div>
-        
-        <div class="pipeline" id="pipeline">
-            <div class="pipeline-header">Conversion Pipeline Status</div>
-            <div class="pipeline-flow">
-                <span class="pipeline-step inactive" data-step="multiur">Multi-UR</span>
-                <span class="pipeline-arrow">→</span>
-                <span class="pipeline-step inactive" data-step="ur">UR</span>
-                <span class="pipeline-arrow">→</span>
-                <span class="pipeline-step inactive" data-step="bytewords">Bytewords</span>
-                <span class="pipeline-arrow">→</span>
-                <span class="pipeline-step inactive" data-step="hex">Hex</span>
-                <span class="pipeline-arrow">→</span>
-                <span class="pipeline-step inactive" data-step="decoded">Decoded</span>
+
+        <!-- Tab 3: QR Scanner -->
+        <div class="tab-content hidden" id="scanner-tab" role="tabpanel" aria-labelledby="tab-scanner" aria-hidden="true">
+            <div class="section-label">📷 QR Code Scanner & Fountain Decoder</div>
+            
+            <!-- Camera Status -->
+            <div id="camera-status" class="status">Camera: Starting...</div>
+            
+            <!-- Camera Controls -->
+            <div class="scanner-controls">
+                <button id="stop-camera" class="example-btn" style="display:none;">⏹️ Stop Camera</button>
+                <button id="reset-scanner" class="example-btn" style="display:none;">🔄 Reset</button>
+                <button id="toggle-torch" class="example-btn" style="display:none;">🔦 Torch: OFF</button>
+            </div>
+            
+            <!-- Type Mismatch Warning -->
+            <div id="type-mismatch-warning" class="status error" style="display:none; margin-top:12px;"></div>
+            
+            <!-- Video Preview -->
+            <div class="scanner-preview">
+                <video id="scanner-video" playsinline></video>
+            </div>
+            
+            <!-- Progress Display -->
+            <div id="scan-progress" class="section-label" style="display:none; margin-top:16px;">
+                Waiting for first QR code...
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="progress-bar-container" style="margin-top:12px;">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            
+            <!-- Blocks Grid Visualization -->
+            <div class="section-label" style="margin-top:24px;">Block Status Grid</div>
+            <div id="blocks-grid" class="blocks-grid"></div>
+            
+            <!-- Grid Legend -->
+            <div class="grid-legend">
+                <div class="legend-item">
+                    <span class="legend-color decoded"></span>
+                    <span>Decoded (resolved)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color seen"></span>
+                    <span>Seen (mixed fragment)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color pending"></span>
+                    <span>Pending</span>
+                </div>
+            </div>
+            
+            <!-- Assembled UR Display -->
+            <div id="assembled-ur-section" style="display:none; margin-top:24px;">
+                <div class="section-label">✅ Assembled UR (Complete)</div>
+                <textarea
+                    id="assembled-ur-output"
+                    class="text-area"
+                    readonly
+                    rows="4"
+                    placeholder="Assembled UR will appear here..."
+                ></textarea>
+                <button id="copy-assembled-ur" class="example-btn" style="margin-top:8px;">📋 Copy UR</button>
+            </div>
+            
+            <!-- Troubleshooting Tips -->
+            <div id="troubleshooting-tips" class="troubleshooting" style="display:none; margin-top:24px;">
+                <strong>No QR code detected. Try:</strong>
+                <ul>
+                    <li>Hold camera steady</li>
+                    <li>Ensure good lighting</li>
+                    <li>QR code fully visible in frame</li>
+                    <li>Move camera closer/farther</li>
+                </ul>
+            </div>
+            
+            <!-- Usage Instructions -->
+            <div class="usage-instructions">
+                <div class="section-label">📝 How to Use</div>
+                <ol>
+                    <li>Camera starts automatically when you open this tab (grant permission when asked)</li>
+                    <li>Point camera at animated QR code sequence</li>
+                    <li><strong>Optimal distance:</strong> 6-12 inches (15-30cm) - QR should fill 40-60% of screen</li>
+                    <li>Tap screen to focus if QR appears blurry</li>
+                    <li>Watch progress grid fill as fragments are decoded</li>
+                    <li>Assembled UR auto-forwards to Converter tab when complete</li>
+                </ol>
+                <p><strong>Note:</strong> Camera access requires HTTPS (localhost OK for development)</p>
+                <p style="color: #586069; font-size: 0.9em; margin-top: 8px;">
+                    💡 <strong>Tip:</strong> If scanning fails, try moving camera closer/farther or adjusting lighting
+                </p>
             </div>
         </div>
-        
-        <div class="status success" id="status">
-            <span class="status-icon">ℹ️</span>
-            <span>Ready for input</span>
+
+        <!-- Tab 4: Registry Browser -->
+        <div class="tab-content hidden" id="registry-tab" role="tabpanel" aria-labelledby="tab-registry" aria-hidden="true">
+            <div class="section-label">📖 Registry Browser & Type Inspection</div>
+
+            <!-- Status -->
+            <div id="registryStatus" class="status">
+                <span class="status-icon">ℹ️</span>
+                <span>Loading registry types...</span>
+            </div>
+
+            <!-- Search Bar -->
+            <div style="margin-top: 16px; margin-bottom: 16px;">
+                <input
+                    type="text"
+                    id="registrySearch"
+                    placeholder="🔍 Search registry types..."
+                    style="width: 100%; padding: 10px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;"
+                />
+            </div>
+
+            <!-- Registry List -->
+            <div id="registryList" class="registry-list" style="margin-top: 16px;">
+                <!-- Registry types will be rendered here -->
+            </div>
+
+            <!-- Usage Instructions -->
+            <div class="usage-instructions" style="margin-top: 32px;">
+                <div class="section-label">📝 How to Use</div>
+                <ol>
+                    <li>Browse registered UR types organized by package</li>
+                    <li>Click on package headers to expand/collapse type lists</li>
+                    <li>Click on type rows to view CDDL schemas and documentation</li>
+                    <li>Click on CBOR tags in CDDL (e.g., <code>#6.41402(detailed-account)</code>) to navigate to definitions</li>
+                    <li>Use the search bar to filter types by name, tag, or description</li>
+                    <li>Copy CDDL schemas for reference or validation</li>
+                </ol>
+                <p style="color: #586069; font-size: 0.9em; margin-top: 8px;">
+                    💡 <strong>Tip:</strong> Open browser console to use <code>window.registryPlayground</code> API for interactive testing
+                </p>
+                <p style="color: #586069; font-size: 0.9em; margin-top: 8px;">
+                    ℹ️ Unknown CBOR tags are looked up from the IANA registry: <a href="https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml" target="_blank" rel="noopener noreferrer" style="color: #0066cc;">https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml</a>
+                </p>
+            </div>
         </div>
     </div>
-    
-    <script type="module" src="demo.js"></script>
+
+    <script type="module">
+        // Initialize router for tab navigation
+        import Router from './js/router.js';
+
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+
+        function initializeApp() {
+            // Initialize router with tab navigation
+            const router = new Router();
+            router.init();
+
+            // Expose router globally for use by tab modules
+            window.router = router;
+
+            console.log('BC-UR Playground initialized');
+        }
+    </script>
+    <script type="module" src="js/converter.js"></script>
+    <script type="module" src="js/scanner.js"></script>
+    <script type="module" src="js/multi-ur.js"></script>
+    <script type="module" src="js/registry.js"></script>
 </body>
 </html>
