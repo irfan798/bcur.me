@@ -17,7 +17,7 @@
  * - Copy-to-clipboard (individual part, all parts, current QR as PNG)
  */
 
-import { UR, UrFountainEncoder, UrFountainDecoder } from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9';
+import { UR, UrFountainEncoder, UrFountainDecoder } from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9?dev';
 import QRCode from 'https://esm.sh/qrcode@1.5.3';
 import { GIFEncoder, quantize, applyPalette } from 'https://unpkg.com/gifenc';
 import { handleError, updateStatus } from './shared.js';

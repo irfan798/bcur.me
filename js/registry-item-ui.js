@@ -23,7 +23,6 @@ export const RegistryItemUIMixin = {
         this.currentRegistryItem = null;
         this.currentTreeState = {}; // Track collapsed/expanded nodes
         this.showAllProperties = false; // Toggle for showing all properties vs just .data
-        this.showCommonMethods = false; // Toggle for showing common methods (toUR, toHex, etc.)
 
         // Setup event listeners for registry item UI
         this.setupRegistryItemListeners();
@@ -102,10 +101,6 @@ export const RegistryItemUIMixin = {
                         <input type="checkbox" id="show-all-properties" ${this.showAllProperties ? 'checked' : ''}>
                         <span>Show All Properties</span>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" id="show-common-methods" ${this.showCommonMethods ? 'checked' : ''}>
-                        <span>Show Common Methods</span>
-                    </label>
                 </div>
                 <div class="registry-type-badge" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: white; border: 1px solid #667eea; border-radius: 6px; font-size: 11px; cursor: pointer;" data-ur-type="${urType}" data-tag="${tag}" title="Click for CDDL schema">
                     <span style="color: #667eea; font-weight: 600;">ur:${urType}</span>
@@ -118,30 +113,8 @@ export const RegistryItemUIMixin = {
                 ${this.renderRegistryItemTree(registryItem, 'root')}
             </div>
 
-            <div class="tree-section" id="methods-section" style="margin-top: 24px; padding-top: 16px; border-top: 2px solid #e1e4e8; ${this.showCommonMethods ? '' : 'display: none;'}">
-                <div class="tree-section-header">⚡ Common Methods</div>
-                <div class="tree-methods-grid">
-        `;
-
-        // Render common methods (only if enabled)
-        if (this.showCommonMethods) {
-            commonMethods.forEach(method => {
-                html += `
-                    <button class="tree-method-btn" data-method-name="${method.name}" title="${method.description}">
-                        <span class="method-icon">▶️</span>
-                        <span class="method-name">${method.name}()</span>
-                        <span class="method-badge">COMMON</span>
-                    </button>
-                `;
-            });
-        }
-
-        html += `
-                </div>
-            </div>
-
-            <div class="tree-section" style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #e1e4e8;">
-                <div class="tree-section-header">⚡ Type-Specific Methods</div>
+            <div class="tree-section" style="margin-top: 24px; padding-top: 16px; border-top: 2px solid #e1e4e8;">
+                <div class="tree-section-header">⚡ Methods</div>
                 <div class="tree-methods-grid">
         `;
 
@@ -176,22 +149,11 @@ export const RegistryItemUIMixin = {
 
         // Attach toggle handlers for inspector controls
         const showAllPropsCheckbox = document.getElementById('show-all-properties');
-        const showCommonMethodsCheckbox = document.getElementById('show-common-methods');
         
         if (showAllPropsCheckbox) {
             showAllPropsCheckbox.addEventListener('change', (e) => {
                 this.showAllProperties = e.target.checked;
                 this.renderTreeView(this.currentRegistryItem); // Re-render
-            });
-        }
-        
-        if (showCommonMethodsCheckbox) {
-            showCommonMethodsCheckbox.addEventListener('change', (e) => {
-                this.showCommonMethods = e.target.checked;
-                const methodsSection = document.getElementById('methods-section');
-                if (methodsSection) {
-                    methodsSection.style.display = e.target.checked ? '' : 'none';
-                }
             });
         }
 
@@ -276,7 +238,7 @@ export const RegistryItemUIMixin = {
      * For regular objects: shows all properties (with filtering based on showAllProperties)
      */
     renderTreeChildren(obj, path, depth = 0) {
-        if (depth > 10) return '<span class="tree-value">[Max depth reached]</span>';
+        if (depth > 50) return '<span class="tree-value">[Max depth reached]</span>';
 
         const items = [];
 
@@ -345,9 +307,14 @@ export const RegistryItemUIMixin = {
             if (isFunction) {
                 // Render function as clickable item with execute button
                 const methodId = `method-${valuePath.replace(/\./g, '-')}`;
+                // Build executable path by appending function call to parent path
+                const executablePath = `${valuePath}()`;
                 items.push(`
                     <div class="tree-node tree-node-function" id="${methodId}">
-                        <div class="tree-function-header" data-method-path="${path}" data-method-key="${key}">
+                        <div class="tree-function-header" 
+                             data-method-path="${path}" 
+                             data-method-key="${key}"
+                             data-executable-path="${executablePath}">
                             <span class="tree-function-icon">▶️</span>
                             <span class="tree-key">${key}()</span>
                             <span class="tree-type">function</span>
@@ -1011,35 +978,100 @@ console.log('UR string:', item.toUR().toString());`;
     },
 
     /**
+     * Execute Function Chain from Path String
+     * Parses path like "root.getMetadata().getData()" and executes each step
+     * 
+     * @param {string} path - Executable path (e.g., "root.getMetadata().getData()")
+     * @returns {Object|null} - Resolved object or null if chain fails
+     */
+    executeFunctionChain(path) {
+        // Split by dots, preserving function calls with "()"
+        const parts = path.split('.');
+        
+        let current = this.currentRegistryItem;
+        
+        console.log(`%c🔗 Executing function chain: ${path}`, 'color: #8b5cf6; font-weight: bold;');
+        
+        // Skip "root" (first part, index 0)
+        for (let i = 1; i < parts.length; i++) {
+            const part = parts[i];
+            
+            if (part.endsWith('()')) {
+                // Function call - execute it
+                const methodName = part.slice(0, -2); // Remove "()"
+                const method = current[methodName];
+                
+                if (typeof method !== 'function') {
+                    console.error(`  ✗ ${methodName} is not a function on:`, current);
+                    return null;
+                }
+                
+                console.log(`  ↳ Executing: ${methodName}()`);
+                
+                try {
+                    current = method.call(current);
+                } catch (error) {
+                    console.error(`  ✗ ${methodName}() failed:`, error);
+                    return null;
+                }
+                
+                if (!current) {
+                    console.error(`  ✗ ${methodName}() returned null/undefined`);
+                    return null;
+                }
+                
+                console.log(`  ✓ Result:`, current.constructor?.name || typeof current);
+            } else {
+                // Property access (e.g., "data")
+                current = current[part];
+                
+                if (!current) {
+                    console.error(`  ✗ Property ${part} not found`);
+                    return null;
+                }
+                
+                console.log(`  ↳ Accessed property: ${part}`);
+            }
+        }
+        
+        console.log(`%c✓ Chain resolved successfully`, 'color: #10b981; font-weight: bold;');
+        return current;
+    },
+
+    /**
      * Execute Tree Function
      * Executes a function directly from the tree view and shows result inline
+     * Integrates TypeScript definition parameter forms (T078-T083)
      */
-    executeTreeFunction(methodKey, methodPath, headerElement) {
+    async executeTreeFunction(methodKey, methodPath, headerElement) {
         if (!this.currentRegistryItem) {
             console.error('No registry item available');
             return;
         }
 
         try {
-            // Resolve the object from the path
-            // methodPath format: "root.data.account" or "root"
-            const pathParts = methodPath.split('.');
-            let targetObject = this.currentRegistryItem;
+            // Execute function chain to resolve target object
+            let targetObject;
             
-            // Navigate through the path (skip 'root')
-            for (let i = 1; i < pathParts.length; i++) {
-                const part = pathParts[i];
-                if (targetObject[part] !== undefined) {
-                    targetObject = targetObject[part];
-                } else {
-                    console.error(`Could not resolve path: ${methodPath}`);
-                    return;
-                }
+            if (methodPath === 'root') {
+                // Root level - use current registry item directly
+                targetObject = this.currentRegistryItem;
+            } else {
+                // Parse and execute function chain to get target object
+                // methodPath examples:
+                // - "root.getMetadata()" → execute getMetadata() on root
+                // - "root.getMetadata().getData()" → execute getMetadata() then getData()
+                targetObject = this.executeFunctionChain(methodPath);
+            }
+
+            if (!targetObject) {
+                console.error('Could not resolve path:', methodPath);
+                return;
             }
 
             // Get the method from the resolved object
             const method = targetObject[methodKey];
-            
+
             if (typeof method !== 'function') {
                 console.error(`${methodKey} is not a function on ${methodPath}`);
                 return;
@@ -1047,23 +1079,28 @@ console.log('UR string:', item.toUR().toString());`;
 
             // Get parameter count
             const paramCount = method.length;
-            
-            // Try to execute the method
+
+            // If method requires parameters, show simple parameter input form
+            if (paramCount > 0) {
+                await this.showTreeParameterInputForm(methodKey, methodPath, targetObject, method, headerElement);
+                return;
+            }
+
+            // Try to execute the method (no parameters)
             // Methods with optional parameters (e.g., toString(hardenedFlag?)) have length=0
-            // We attempt execution and catch errors for methods that truly require params
             const fullPath = `${methodPath}.${methodKey}()`;
             let result;
-            
+
             try {
                 console.log(`%c▶️ Executing: ${fullPath}`, 'color: #667eea; font-weight: bold;');
                 result = method.call(targetObject);
             } catch (error) {
-                // Method requires parameters - show console hint
-                console.warn(`%c⚠️ ${methodKey}() requires parameters`, 'color: #f59e0b; font-weight: bold;');
+                // Method execution failed
+                console.warn(`%c⚠️ ${methodKey}() execution failed`, 'color: #f59e0b; font-weight: bold;');
                 console.error(error);
                 const cleanPath = methodPath.replace('root.', '');
-                console.log(`Try: window.$lastRegistryItem${cleanPath ? '.' + cleanPath : ''}.${methodKey}(/* add parameters */)`);
-                
+                console.log(`Try: window.$lastRegistryItem${cleanPath ? '.' + cleanPath : ''}.${methodKey}()`);
+
                 // Visual feedback
                 headerElement.style.background = '#fff3cd';
                 setTimeout(() => { headerElement.style.background = ''; }, 500);
@@ -1083,13 +1120,16 @@ console.log('UR string:', item.toUR().toString());`;
             const isResultRegistryItem = result && typeof result === 'object' && 
                 result.type && typeof result.type === 'object' && result.type.URType;
 
+            // Build new path for nested results by appending this function call
+            const resultPath = `${methodPath}.${methodKey}()`;
+
             // Format and display the result
             let resultHtml = '';
             
             if (isResultRegistryItem) {
-                // Render as nested registry item tree
+                // Render as nested registry item tree with new executable path
                 resultHtml = `
-                    <div class="tree-function-result-header" data-result-toggle="${methodPath}">
+                    <div class="tree-function-result-header" data-result-toggle="${resultPath}">
                         <div style="display: flex; align-items: center; gap: 6px;">
                             <span class="result-toggle-icon" style="cursor: pointer; user-select: none;">▼</span>
                             <span class="result-icon">✓</span>
@@ -1097,8 +1137,8 @@ console.log('UR string:', item.toUR().toString());`;
                             <span class="result-type">${result.constructor.name}</span>
                         </div>
                     </div>
-                    <div class="tree-function-result-value" data-result-content="${methodPath}">
-                        ${this.renderTreeChildren(result, `${methodPath}-result`, 0)}
+                    <div class="tree-function-result-value" data-result-content="${resultPath}">
+                        ${this.renderTreeChildren(result, resultPath, 0)}
                     </div>
                 `;
             } else {
@@ -1107,7 +1147,7 @@ console.log('UR string:', item.toUR().toString());`;
                 const resultType = this.getValueType(result);
                 
                 resultHtml = `
-                    <div class="tree-function-result-header" data-result-toggle="${methodPath}">
+                    <div class="tree-function-result-header" data-result-toggle="${resultPath}">
                         <div style="display: flex; align-items: center; gap: 6px;">
                             <span class="result-toggle-icon" style="cursor: pointer; user-select: none;">▼</span>
                             <span class="result-icon">✓</span>
@@ -1115,7 +1155,7 @@ console.log('UR string:', item.toUR().toString());`;
                             <span class="result-type">${resultType}</span>
                         </div>
                     </div>
-                    <div class="tree-function-result-value" data-result-content="${methodPath}">
+                    <div class="tree-function-result-value" data-result-content="${resultPath}">
                         <pre style="margin: 0; font-family: inherit; white-space: pre-wrap;">${formattedResult}</pre>
                     </div>
                 `;
@@ -1125,8 +1165,8 @@ console.log('UR string:', item.toUR().toString());`;
             resultContainer.style.display = 'block';
 
             // Attach toggle handler for result minimize/expand
-            const resultToggleHeader = resultContainer.querySelector(`[data-result-toggle="${methodPath}"]`);
-            const resultContent = resultContainer.querySelector(`[data-result-content="${methodPath}"]`);
+            const resultToggleHeader = resultContainer.querySelector(`[data-result-toggle="${resultPath}"]`);
+            const resultContent = resultContainer.querySelector(`[data-result-content="${resultPath}"]`);
             const resultToggleIcon = resultToggleHeader?.querySelector('.result-toggle-icon');
             
             if (resultToggleHeader && resultContent && resultToggleIcon) {
@@ -1254,7 +1294,7 @@ console.log('UR string:', item.toUR().toString());`;
      * FR-042: No-param methods execute directly, results expand in-place in tree view
      * FR-043: Parameterized methods show console hint with signature
      */
-    executeMethodToConsole(methodName) {
+    async executeMethodToConsole(methodName) {
         if (!this.currentRegistryItem) {
             console.error('No registry item available');
             this.showCopyFeedback('No registry item available', false);
@@ -1283,18 +1323,18 @@ console.log('UR string:', item.toUR().toString());`;
 
                 // Show inline result in tree view
                 this.showInlineMethodResult(methodName, result);
-                
+
                 this.showCopyFeedback(`✓ ${methodName}() executed - result shown below`);
             } else {
-                // Has parameters - show console hint (FR-043)
+                // Show console hint (FR-043) for methods with parameters
                 const signature = this.getMethodSignature(methodName, method);
                 const hint = `window.$lastRegistryItem.${methodName}(${this.getPlaceholderParams(paramCount)}) // Copy to console and fill parameters`;
-                
+
                 console.log(`%c💡 Method requires ${paramCount} parameter(s)`, 'color: #f59e0b; font-weight: bold; font-size: 13px;');
                 console.log(`%c${signature}`, 'color: #8b5cf6; font-size: 12px;');
                 console.log(`%cCopy this to console:`, 'color: #6366f1; font-weight: bold;');
                 console.log(hint);
-                
+
                 this.showConsoleHint(methodName, hint, signature);
                 this.showCopyFeedback('Method call hint shown - see console');
             }
@@ -1394,7 +1434,7 @@ console.log('UR string:', item.toUR().toString());`;
     showConsoleHint(methodName, hint, signature) {
         // Find or create hint container
         let hintContainer = document.getElementById(`console-hint-${methodName}`);
-        
+
         if (!hintContainer) {
             const methodItem = this.methodsContent.querySelector(`[data-method="${methodName}"]`);
             if (methodItem) {
@@ -1427,6 +1467,277 @@ console.log('UR string:', item.toUR().toString());`;
                     this.copyToClipboardWithFeedback(hint, 'Hint copied to clipboard!');
                 });
             }
+        }
+    },
+
+    /**
+     * Show Parameter Input Form (T081 integration)
+     * Renders the parameter input form and attaches event handlers
+     */
+    async showParameterInputForm(methodName, params) {
+        // Find or create form container
+        let formContainer = document.getElementById(`param-form-${methodName}`);
+
+        if (!formContainer) {
+            const methodItem = this.methodsContent.querySelector(`[data-method="${methodName}"]`);
+            if (methodItem) {
+                formContainer = document.createElement('div');
+                formContainer.id = `param-form-${methodName}`;
+                formContainer.className = 'param-form-container';
+                methodItem.after(formContainer);
+            } else {
+                // Fallback: create in tree view
+                formContainer = document.createElement('div');
+                formContainer.id = `param-form-${methodName}`;
+                formContainer.className = 'param-form-container';
+                this.treeViewContent.appendChild(formContainer);
+            }
+        }
+
+        // Render the form
+        const formHtml = await this.renderParameterInputForm(this.currentRegistryItem, methodName, params);
+        formContainer.innerHTML = formHtml;
+
+        // Attach event handlers
+        const executeBtn = formContainer.querySelector('.execute-with-params-btn');
+        const cancelBtn = formContainer.querySelector('.cancel-params-btn');
+
+        if (executeBtn) {
+            executeBtn.addEventListener('click', async () => {
+                await this.executeMethodWithParameters(methodName, params, formContainer);
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                formContainer.remove();
+            });
+        }
+    },
+
+    /**
+     * Execute Method With Parameters (T082 integration)
+     * Collects input values, validates them, and executes the method
+     */
+    async executeMethodWithParameters(methodName, params, formContainer) {
+        try {
+            // Collect input values
+            const inputValues = [];
+            params.forEach((param, index) => {
+                const inputId = `param-${methodName}-${index}`;
+                const input = document.getElementById(inputId);
+                if (input) {
+                    inputValues.push(input.value);
+                }
+            });
+
+            // Validate inputs (T082)
+            const errors = this.validateParameterInput(params, inputValues);
+            if (errors.length > 0) {
+                console.error('Validation errors:', errors);
+                this.showCopyFeedback(`Validation error: ${errors[0]}`, false);
+                return;
+            }
+
+            // Convert input values to appropriate types
+            const typedValues = params.map((param, index) => {
+                const value = inputValues[index];
+                const type = param.type.toLowerCase();
+
+                // Skip optional empty values
+                if ((!value || value.trim() === '') && (param.optional || param.defaultValue)) {
+                    return undefined;
+                }
+
+                // Convert to appropriate type
+                if (type.includes('number')) {
+                    return Number(value);
+                } else if (type.includes('boolean')) {
+                    return value === 'true';
+                } else {
+                    return value;
+                }
+            }).filter(v => v !== undefined);
+
+            // Execute the method
+            const method = this.currentRegistryItem[methodName];
+            console.log(`%c🔧 Executing: $lastRegistryItem.${methodName}(${typedValues.map(v => JSON.stringify(v)).join(', ')})`, 'color: #667eea; font-weight: bold; font-size: 13px;');
+            const result = method.apply(this.currentRegistryItem, typedValues);
+
+            // Log the result
+            console.log('%c📤 Result:', 'color: #10b981; font-weight: bold;');
+            console.log(result);
+
+            // Show inline result
+            this.showInlineMethodResult(methodName, result);
+
+            // Remove form container
+            formContainer.remove();
+
+            this.showCopyFeedback(`✓ ${methodName}() executed successfully`);
+        } catch (err) {
+            console.error(`Error executing ${methodName} with parameters:`, err);
+            this.showCopyFeedback(`Error: ${err.message}`, false);
+        }
+    },
+
+
+    /**
+     * Show Tree Parameter Input Form
+     * Simple parameter form for tree view methods (no TypeScript definitions)
+     */
+    async showTreeParameterInputForm(methodKey, methodPath, targetObject, method, headerElement) {
+        const parent = headerElement.closest('.tree-node-function');
+        const resultContainer = parent.querySelector('.tree-function-result');
+
+        if (!resultContainer) return;
+
+        const paramCount = method.length;
+
+        // Generate simple parameter input form
+        let formHtml = '<div class="param-input-form" style="margin: 12px 0; padding: 12px; background: #f6f8fa; border-radius: 6px; border: 1px solid #e1e4e8;">';
+        formHtml += `<div style="font-weight: 600; margin-bottom: 8px; font-size: 12px;">Parameters for ${methodKey}()</div>`;
+
+        for (let i = 0; i < paramCount; i++) {
+            const inputId = `param-${methodKey}-${i}`;
+            formHtml += `
+                <div style="margin-bottom: 8px;">
+                    <label for="${inputId}" style="display: block; font-size: 11px; margin-bottom: 4px; color: #586069;">
+                        param${i + 1}
+                    </label>
+                    <input type="text" id="${inputId}" data-param-index="${i}" style="width: 100%; padding: 4px 8px; border: 1px solid #e1e4e8; border-radius: 4px; font-size: 11px;" placeholder="Enter value">
+                </div>
+            `;
+        }
+
+        formHtml += `
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <button class="execute-with-params-btn" style="padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                    ▶️ Execute
+                </button>
+                <button class="cancel-params-btn" style="padding: 6px 12px; background: #e1e4e8; color: #24292e; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                    Cancel
+                </button>
+            </div>
+        `;
+
+        formHtml += '</div>';
+
+        resultContainer.innerHTML = formHtml;
+        resultContainer.style.display = 'block';
+
+        // Attach event handlers
+        const executeBtn = resultContainer.querySelector('.execute-with-params-btn');
+        const cancelBtn = resultContainer.querySelector('.cancel-params-btn');
+
+        if (executeBtn) {
+            executeBtn.addEventListener('click', async () => {
+                // Collect input values
+                const inputValues = [];
+                for (let i = 0; i < paramCount; i++) {
+                    const inputId = `param-${methodKey}-${i}`;
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        let value = input.value.trim();
+
+                        // Try to parse as JSON for objects/arrays, otherwise use as string
+                        if (value.startsWith('{') || value.startsWith('[')) {
+                            try {
+                                value = JSON.parse(value);
+                            } catch (e) {
+                                // Keep as string if JSON parse fails
+                            }
+                        } else if (value === 'true' || value === 'false') {
+                            value = value === 'true';
+                        } else if (!isNaN(value) && value !== '') {
+                            value = Number(value);
+                        }
+
+                        inputValues.push(value);
+                    }
+                }
+
+                try {
+                    // Execute the method
+                    const fullPath = `${methodPath}.${methodKey}()`;
+                    console.log(`%c🔧 Executing: ${fullPath} with ${inputValues.map(v => JSON.stringify(v)).join(', ')}`, 'color: #667eea; font-weight: bold;');
+                    const result = method.apply(targetObject, inputValues);
+
+                    // Log the result
+                    console.log('%c📤 Result:', 'color: #10b981; font-weight: bold;');
+                    console.log(result);
+
+                    // Check if result is a registry item
+                    const isResultRegistryItem = result && typeof result === 'object' &&
+                        result.type && typeof result.type === 'object' && result.type.URType;
+
+                    // Format and display the result
+                    let resultHtml = '';
+
+                    if (isResultRegistryItem) {
+                        resultHtml = `
+                            <div class="tree-function-result-header">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span class="result-icon">✓</span>
+                                    <span class="result-label">Result (Registry Item):</span>
+                                    <span class="result-type">${result.constructor.name}</span>
+                                </div>
+                            </div>
+                            <div class="tree-function-result-value">
+                                ${this.renderTreeChildren(result, `${methodPath}-result`, 0)}
+                            </div>
+                        `;
+                    } else {
+                        const formattedResult = this.formatTreeValue(result);
+                        const resultType = this.getValueType(result);
+
+                        resultHtml = `
+                            <div class="tree-function-result-header">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span class="result-icon">✓</span>
+                                    <span class="result-label">Result:</span>
+                                    <span class="result-type">${resultType}</span>
+                                </div>
+                            </div>
+                            <div class="tree-function-result-value">
+                                <pre style="margin: 0; font-family: inherit; white-space: pre-wrap;">${formattedResult}</pre>
+                            </div>
+                        `;
+                    }
+
+                    resultContainer.innerHTML = resultHtml;
+                    resultContainer.style.display = 'block';
+
+                    // Visual feedback
+                    const icon = headerElement.querySelector('.tree-function-icon');
+                    if (icon) {
+                        icon.textContent = '✓';
+                        icon.style.color = '#10b981';
+                        setTimeout(() => {
+                            icon.textContent = '▶️';
+                            icon.style.color = '';
+                        }, 1000);
+                    }
+
+                    this.showCopyFeedback(`✓ ${methodKey}() executed successfully`);
+                } catch (err) {
+                    console.error(`Error executing ${methodKey} with parameters:`, err);
+                    resultContainer.innerHTML = `
+                        <div style="color: #dc2626; padding: 8px; background: #fee2e2; border-radius: 4px; border-left: 3px solid #dc2626;">
+                            <strong>Error:</strong> ${err.message}
+                        </div>
+                    `;
+                    resultContainer.style.display = 'block';
+                    this.showCopyFeedback(`Error: ${err.message}`, false);
+                }
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                resultContainer.innerHTML = '';
+                resultContainer.style.display = 'none';
+            });
         }
     },
 

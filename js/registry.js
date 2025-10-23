@@ -15,15 +15,15 @@ import {
     UR,
     UrRegistry,
     isRegistryItem
-} from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9';
+} from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9?dev';
 
 // Import UR Registry packages
-import * as blockchainCommons from 'https://esm.sh/@ngraveio/ur-blockchain-commons@2.0.1-beta.2';
-import * as coinIdentity from 'https://esm.sh/@ngraveio/ur-coin-identity@2.0.1-beta.2';
-import * as urSync from 'https://esm.sh/@ngraveio/ur-sync@2.0.1-beta.2';
-import * as hexString from 'https://esm.sh/@ngraveio/ur-hex-string@2.0.1-beta.2';
-import * as urSign from 'https://esm.sh/@ngraveio/ur-sign@2.0.1-beta.2';
-import * as urUuid from 'https://esm.sh/@ngraveio/ur-uuid@2.0.1-beta.2';
+import * as blockchainCommons from 'https://esm.sh/@ngraveio/ur-blockchain-commons@2.0.1-beta.2?dev';
+import * as coinIdentity from 'https://esm.sh/@ngraveio/ur-coin-identity@2.0.1-beta.2?dev';
+import * as urSync from 'https://esm.sh/@ngraveio/ur-sync@2.0.1-beta.2?dev';
+import * as hexString from 'https://esm.sh/@ngraveio/ur-hex-string@2.0.1-beta.2?dev';
+import * as urSign from 'https://esm.sh/@ngraveio/ur-sign@2.0.1-beta.2?dev';
+import * as urUuid from 'https://esm.sh/@ngraveio/ur-uuid@2.0.1-beta.2?dev';
 
 // Import shared utilities
 import { updateStatus, handleError } from './shared.js';

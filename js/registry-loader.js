@@ -62,7 +62,7 @@ const PACKAGE_CONFIG = {
  * @returns {string} CDN URL
  */
 function buildCdnUrl(packageName, version) {
-    return `https://esm.sh/${packageName}@${version}`;
+    return `https://esm.sh/${packageName}@${version}?dev`;
 }
 
 /**

@@ -164,7 +164,7 @@
 - [x] **T049a** [US2] Implement encoder blocks grid visualization in `js/multi-ur.js` (shows which original blocks each fragment contains, updates with animation)
 - [ ] **T050** [US2] ~~Implement download logic~~ REMOVED - Replaced by GIF export (T051)
 - [x] **T050a** [US2] Implement copy-to-clipboard in `js/multi-ur.js` (copy individual part, copy all parts as text, copy current QR as PNG)
-- [ ] **T051** [US2] Implement animated GIF export in `js/multi-ur.js` (using gif.js library, finite mode only, disabled with tooltip in infinite mode)
+- [x] **T051** [US2] Implement animated GIF export in `js/multi-ur.js` (using gif.js library, finite mode only, disabled with tooltip in infinite mode)
 - [x] **T052** [US2] Add multi-UR generator tab HTML structure to `index.html` (input section, encoder params, QR settings, canvas, controls, text output, encoder blocks grid)
 
 **Checkpoint**: User Story 2 complete - multi-UR generation with animated QR fully functional
@@ -203,32 +203,25 @@
 
 **Deliverables**: FR-040 through FR-052 (wide tree view, clickable methods, inline execution, console integration, expandable type drawer)
 
-### Implementation for User Story 5 (NEW Requirements - Updated 2025-10-14)
+### Implementation for User Story 5 (Updated 2025-10-23)
 
 **COMPLETED (Already Implemented in T022b-T022h)**:
 - [x] Wide property inspector tree view (FR-040) - Implemented in T022b
-- [x] Methods panel with common/type-specific toggle (FR-041) - Implemented in T022c  
+- [x] Methods panel with common/type-specific toggle (FR-041) - Implemented in T022c
 - [x] Copy-to-clipboard options (FR-046) - Implemented in T022f
 - [x] Tree view CSS styles (FR-040) - Implemented in T022h
 
-**NEW Tasks (Based on Updated Spec)**:
+**Inline Execution & Console Integration (No TypeScript .d.ts fetching)**:
 
 - [x] **T062** [US5] Add inline method execution to `js/registry-item-ui.js` (FR-042: no-param methods execute directly, results expand in-place in tree view)
 - [x] **T063** [US5] Add console hints for parameterized methods in `js/registry-item-ui.js` (FR-043: show method signature with placeholder, e.g., `item.validate(schema) // Copy to console`) - IMPLEMENTED in T062
 - [x] **T064** [US5] Implement recursive inspector for method results in `js/registry-item-ui.js` (FR-044: when method returns registry item, render nested tree with same interactive capabilities) - IMPLEMENTED in T062
 - [x] **T077** [US5] Improve optional parameter detection in `js/registry-item-ui.js` - Add `.length` check to distinguish methods with optional params (e.g., `toString(hardenedFlag?)` has length=0 but should execute inline since optional)
-- [ ] **T078** [US5] Add TypeScript definition service to `js/registry-item-ui.js` - Create `fetchTypeScriptDefinition(packageName, className)` to load .d.ts from esm.sh and cache results in Map
-- [ ] **T079** [US5] Add TypeScript signature parser to `js/registry-item-ui.js` - Create `parseMethodSignature(dtsContent, methodName)` to extract parameters from .d.ts using regex (e.g., `toString(hardenedFlag?: "'" | 'h'): string;` → `[{name: 'hardenedFlag', optional: true, type: "'" | 'h"}]`)
-- [ ] **T080** [US5] Enhance method execution UI in `js/registry-item-ui.js` - For optional param methods: show inline "Execute" button + tooltip "(optional params will use defaults)", keep existing console hint as secondary option
-- [ ] **T081** [US5] Add parameter input forms to method execution in `js/registry-item-ui.js` - When .d.ts available and method has required params, render inline form with smart inputs based on TypeScript types (string → text input, number → number input, enum → dropdown)
-- [ ] **T082** [US5] Add validation to parameter input forms in `js/registry-item-ui.js` - Validate user input against TypeScript type before execution (e.g., enum values must match definition, numbers must be numeric)
-- [ ] **T083** [US5] Update method tooltips to show TypeScript signatures in `js/registry-item-ui.js` (FR-051: hover over method to see full signature from .d.ts, e.g., `toString(hardenedFlag?: "'" | 'h'): string`)
 - [x] **T065** [US5] Add expandable type drawer to converter output in `js/converter.js` (FR-045: show CDDL schema, tag, package, docs link from registry browser - collapsed by default)
 - [x] **T066** [US5] Expose bc-ur library natively on console in `js/converter.js` (FR-047: UR, BytewordEncoding, UrFountainEncoder, UrFountainDecoder globally accessible)
 - [x] **T067** [US5] Expose ur-registry classes on console in `js/converter.js` (FR-048: CryptoHDKey, CryptoSeed, etc. from all 6 loaded packages)
 - [x] **T068** [US5] Add console tips panel to registry item UI in `js/registry-item-ui.js` (FR-049: show bc-ur library documentation links and usage patterns)
-- [ ] **T069** [US5] Implement console instance detection in `js/converter.js` (FR-050: detect registry items created in console, offer "Show in Property Inspector" action)
-- [x] **T070** [US5] Add method documentation tooltips to methods panel in `js/registry-item-ui.js` (FR-051: hover to see parameters and return type) - SUPERSEDED by T083 (TypeScript signature tooltips)
+- [x] **T069** [US5] Implement console instance detection in `js/converter.js` (FR-050: detect registry items created in console, offer "Show in Property Inspector" action)
 - [x] **T071** [US5] Update HTML for expandable type drawer in `index.html` (add drawer container in converter output section)
 - [x] **T072** [US5] Add CSS for type drawer and wider property inspector in `css/main.css` (drawer animation, wider tree layout)
 
@@ -331,14 +324,14 @@ Setup (Phase 1) → Foundational (Phase 2) → [All User Stories Can Start in Pa
 
 ## Task Summary
 
-**Total Tasks**: **83 tasks** (76 base + 7 new for TypeScript definition integration, updated 2025-10-16)
+**Total Tasks**: **76 tasks** (TypeScript .d.ts fetching removed 2025-10-23)
 - Phase 1 (Setup): 5 tasks - Refactor existing HTML into tabs
 - Phase 2 (Foundational): 7 tasks - Extract utilities from demo.js
 - Phase 3 (US1 - Converter): **10 tasks** 🎯 MVP - Refactor existing code (was 15)
 - Phase 4 (US3 - Scanner): 14 tasks (includes clipboard + timeout) - New implementation
 - Phase 5 (US2 - Multi-UR): 14 tasks (includes clipboard) - New implementation
 - Phase 6 (US4 - Registry): 9 tasks - New implementation
-- Phase 7 (US5 - Console): **18 tasks** (updated 2025-10-16) - Native bc-ur console integration + TypeScript definition parser
+- Phase 7 (US5 - Console): **11 tasks** (updated 2025-10-23) - Native bc-ur console integration with inline method execution
 - Phase 8 (Polish): 4 tasks (T073-T076) - Cross-cutting concerns
 
 **Existing Code Reuse**:
@@ -354,7 +347,7 @@ Setup (Phase 1) → Foundational (Phase 2) → [All User Stories Can Start in Pa
 - US2 (Multi-UR Gen): 13 tasks - Independent
 - US3 (Scanner): 12 tasks - Independent (mobile primary)
 - US4 (Registry): 9 tasks - Independent
-- US5 (Console): **18 tasks** (updated 2025-10-16) - Native bc-ur integration + TypeScript definition parser for smart parameter handling
+- US5 (Console): **11 tasks** (updated 2025-10-23) - Native bc-ur integration with inline method execution (TypeScript .d.ts fetching removed)
 
 **Independent Test Criteria**:
 - ✅ US1: Paste UR → see all output formats + multi-part assembly + wide property inspector for registry items
