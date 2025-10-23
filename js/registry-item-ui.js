@@ -419,8 +419,9 @@ export const RegistryItemUIMixin = {
         if (typeof value === 'number') return String(value);
         if (typeof value === 'boolean') return String(value);
         if (value instanceof Uint8Array) {
+            // Show full hex without truncation
             const hex = Array.from(value).map(b => b.toString(16).padStart(2, '0')).join('');
-            return `0x${hex.substring(0, 20)}${hex.length > 20 ? '...' : ''}`;
+            return `0x${hex}`;
         }
         return String(value);
     },
