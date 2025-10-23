@@ -243,7 +243,7 @@ export const RegistryItemUIMixin = {
         const items = [];
 
         // Common registry methods to filter out (unless overridden by type)
-        const commonRegistryMethods = ['toUR', 'toUr', 'toHex', 'toCBOR', 'toBytes', 'preCBOR', 'encodeKeys', 'decodeKeys'];
+        const commonRegistryMethods = ['toUr', 'toHex', 'toCBOR', 'toBytes', 'preCBOR', 'encodeKeys', 'decodeKeys'];
 
         // Internal properties to filter out when not showing all
         const internalProps = ['type', 'keyMap', 'allowKeysNotInMap'];
@@ -458,7 +458,7 @@ export const RegistryItemUIMixin = {
                     <div class="console-examples">
                         <strong>💻 Quick Examples:</strong>
                         <ul>
-                            <li><code>window.$lastRegistryItem.toUR().toString()</code> - Get UR string</li>
+                            <li><code>window.$lastRegistryItem.toUr().toString()</code> - Get UR string</li>
                             <li><code>window.$lastDecoded</code> - View raw CBOR data</li>
                             <li><code>window.UrRegistry.registry</code> - Access registry instance</li>
                         </ul>
@@ -541,7 +541,7 @@ export const RegistryItemUIMixin = {
      */
     getCommonRegistryMethods() {
         return [
-            { name: 'toUR', description: 'Convert to UR string', signature: 'toUR(): UR' },
+            { name: 'toUr', description: 'Convert to UR string', signature: 'toUr(): UR' },
             { name: 'toHex', description: 'Encode to hex string', signature: 'toHex(): string' },
             { name: 'toCBOR', description: 'Encode to CBOR bytes', signature: 'toCBOR(): Uint8Array' },
             { name: 'toBytes', description: 'Get payload bytes', signature: 'toBytes(): Uint8Array' }
@@ -904,7 +904,7 @@ export const RegistryItemUIMixin = {
 
                 case 'ur':
                     // Convert to UR string
-                    const ur = this.currentRegistryItem.toUR ? this.currentRegistryItem.toUR() : null;
+                    const ur = this.currentRegistryItem.toUr ? this.currentRegistryItem.toUr() : null;
                     text = ur ? ur.toString() : '';
                     break;
 
@@ -915,7 +915,7 @@ export const RegistryItemUIMixin = {
                     // Get registry type info from .type property
                     const registryType = this.currentRegistryItem.type;
                     const urType = registryType?.URType || 'unknown';
-                    const urString = this.currentRegistryItem.toUR?.().toString() || `ur:${urType}/...`;
+                    const urString = this.currentRegistryItem.toUr?.().toString() || `ur:${urType}/...`;
 
                     text = `// Registry Item Type: ur:${urType}
 // Access via: window.UrRegistry.registry.get("${urType}")
@@ -933,7 +933,7 @@ const item = RegistryClass.fromHex('${hex}');
 
 console.log('Decoded registry item:', item);
 console.log('UR type:', item.type.URType); // Access via .type property
-console.log('UR string:', item.toUR().toString());`;
+console.log('UR string:', item.toUr().toString());`;
                     break;
 
                 default:
