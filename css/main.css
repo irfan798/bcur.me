@@ -37,6 +37,14 @@ body {
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
+/* Hide mobile-only elements on desktop */
+.hamburger-menu,
+.mobile-menu-overlay,
+.mobile-menu-backdrop,
+.mobile-footer {
+    display: none;
+}
+
 .header {
     text-align: center;
     margin-bottom: 50px;
@@ -171,13 +179,13 @@ body {
         font-size: 1.5rem;
     }
 
-    .header-links {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
+    /* HIDE header links and made-by section on mobile */
+    .header-links,
+    .header .header-links,
+    .header .made-by,
     .made-by {
-        justify-content: center;
+        display: none !important;
+        visibility: hidden !important;
     }
     
     /* Reduce container padding on mobile to maximize space */
