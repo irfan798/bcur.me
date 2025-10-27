@@ -169,7 +169,6 @@ js/
 ├── scanner.js           # Tab 3: QR scanner & fountain decoder
 ├── registry.js          # Tab 4: Registry browser & console playground
 ├── router.js            # Hash-based tab navigation
-├── registry-loader.js   # Dynamic ur-registry package loading
 └── shared.js            # Common utilities (debounce, cache, error handling)
 css/
 ├── main.css             # Global styles

@@ -76,7 +76,6 @@ export class QRScanner {
     // Track if listeners have been set up to prevent duplicates
     this.listenersInitialized = false;
     
-    console.log('[QRScanner] Initialized');
   }
   
   /**
@@ -84,7 +83,6 @@ export class QRScanner {
    * Called by router on tab activation
    */
   async init(container) {
-    console.log('[QRScanner] init() called');
     this.container = container;
     
     try {
@@ -100,7 +98,6 @@ export class QRScanner {
         this.listenersInitialized = true;
       }
       
-      console.log('[QRScanner] Initialization complete');
       
       // Auto-start camera when tab is activated
       await this.startCamera();
@@ -158,12 +155,10 @@ export class QRScanner {
    * FR-022: Display live camera preview
    */
   async startCamera() {
-    console.log('[QRScanner] startCamera() called');
     
     try {
       // Check if camera is already active
       if (this.state.camera.isActive) {
-        console.log('[QRScanner] Camera already active');
         return;
       }
       
@@ -214,7 +209,6 @@ export class QRScanner {
       // Update UI
       this.updateUI();
       
-      console.log('[QRScanner] Camera started successfully');
     } catch (error) {
       console.error('[QRScanner] Camera start failed:', error);
       
@@ -237,7 +231,6 @@ export class QRScanner {
    * Stop camera and scanning
    */
   stopCamera() {
-    console.log('[QRScanner] stopCamera() called');
     
     if (this.scanner) {
       this.scanner.stop();
@@ -264,7 +257,6 @@ export class QRScanner {
    */
   handleQRDetected(result) {
     const urString = result.data;
-    console.log('[QRScanner] QR detected:', urString.substring(0, 60) + '...');
     
     // Reset no-QR timeout
     if (this.noQrTimer) {
@@ -290,7 +282,6 @@ export class QRScanner {
       // Initialize decoder if not started
       if (!this.state.decoder.instance) {
         this.state.decoder.instance = new UrFountainDecoder();
-        console.log('[QRScanner] Decoder initialized');
       }
       
       // Check for type mismatch (FR-028)
@@ -350,10 +341,6 @@ export class QRScanner {
       // For single-part URs, set progress to 100%
       this.state.decoder.progress = 1.0;
       
-      console.log('[QRScanner] UR complete:', {
-        type: this.state.decoder.urType,
-        isSinglePart: !decoder.expectedPartCount || decoder.expectedPartCount === 0
-      });
       
       return;
     }
@@ -366,11 +353,6 @@ export class QRScanner {
       this.state.decoder.progress = decoder.getProgress(); // 0.0-1.0
       this.state.decoder.urType = decoder.expectedType;
       
-      console.log('[QRScanner] Decoder progress:', {
-        decoded: this.state.decoder.decodedBlocks.filter(b => b === 1).length,
-        expected: this.state.decoder.expectedBlockCount,
-        progress: (this.state.decoder.progress * 100).toFixed(1) + '%'
-      });
     }
   }
   
@@ -379,7 +361,6 @@ export class QRScanner {
    * FR-030: Auto-forward assembled UR to converter tab
    */
   handleDecodingComplete() {
-    console.log('[QRScanner] Decoding complete!');
     
     // Stop camera
     this.stopCamera();
@@ -420,7 +401,6 @@ export class QRScanner {
    * FR-029: Provide manual reset button
    */
   resetDecoder() {
-    console.log('[QRScanner] resetDecoder() called');
     
     if (this.state.decoder.instance) {
       this.state.decoder.instance.reset();
@@ -747,8 +727,6 @@ export class QRScanner {
    * Cleanup on tab deactivation
    */
   destroy() {
-    console.log('[QRScanner] destroy() called');
-    
     // Stop camera
     this.stopCamera();
     

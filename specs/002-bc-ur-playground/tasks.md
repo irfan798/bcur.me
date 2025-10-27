@@ -59,7 +59,6 @@
 - [x] **T008** Add error handling utilities to `js/shared.js` - Extract updateStatus/handleError patterns from `demo.js`
 - [x] **T009** Create `js/router.js` - Implement hash-based routing (tab switching based on window.location.hash, default to #converter when hash is empty or invalid)
 - [x] **T010** Add sessionStorage utilities to `js/router.js` - Cross-tab forwarding (setItem/getItem with TTL, clearOnUnload event)
-- [x] **T011** Create `js/registry-loader.js` - Dynamic ESM import wrapper for 6 ur-registry packages (loadRegistryPackage(key) function)
 - [x] **T012** Initialize router in `index.html` - Add router.init() on DOMContentLoaded (activate default #converter tab, handle deep links)
 
 **Checkpoint**: Foundation ready - existing converter code can be refactored into js/converter.js
@@ -362,12 +361,11 @@ Setup (Phase 1) → Foundational (Phase 2) → [All User Stories Can Start in Pa
 3. `css/tabs.css` (T004 - tab navigation)
 4. `js/shared.js` (T006-T008 - extract from demo.js)
 5. `js/router.js` (T009-T010, T012)
-6. `js/registry-loader.js` (T011)
-7. `js/converter.js` (T013-T019 - refactored from demo.js)
-8. Update `index.html` (T002, T005, T020-T021 - multi-tab structure)
-9. `js/scanner.js` (T023-T034 - new)
-10. `js/multi-ur.js` (T035-T047 - new)
-11. `js/registry.js` (T048-T062 - new)
+6. `js/converter.js` (T013-T019 - refactored from demo.js)
+7. Update `index.html` (T002, T005, T020-T021 - multi-tab structure)
+8. `js/scanner.js` (T023-T034 - new)
+9.  `js/multi-ur.js` (T035-T047 - new)
+10. `js/registry.js` (T048-T062 - new)
 
 **Existing Files to Preserve**:
 - ✅ `demo.js` - Backup to demo-backup/, reference for implementation patterns

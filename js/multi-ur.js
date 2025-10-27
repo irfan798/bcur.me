@@ -86,7 +86,6 @@ export class MultiURGenerator {
     // Track if listeners have been set up to prevent duplicates
     this.listenersInitialized = false;
 
-    console.log('[MultiURGenerator] Initialized');
   }
 
   /**
@@ -94,7 +93,6 @@ export class MultiURGenerator {
    * Called by router on tab activation
    */
   async init(container) {
-    console.log('[MultiURGenerator] init() called');
     this.container = container;
 
     try {
@@ -110,7 +108,6 @@ export class MultiURGenerator {
       // Check for forwarded data from converter
       this.checkForwardedData();
 
-      console.log('[MultiURGenerator] Initialization complete');
     } catch (error) {
       console.error('[MultiURGenerator] Initialization error:', error);
       handleError(error, this.container, 'Multi-UR Generator initialization failed');
@@ -243,7 +240,6 @@ export class MultiURGenerator {
       const forwardData = sessionStorage.getItem('forward-multi-ur');
       if (forwardData) {
         const data = JSON.parse(forwardData);
-        console.log('[MultiURGenerator] Received forwarded data:', data);
 
         // Validate TTL
         if (data.ttl && (Date.now() - data.timestamp > data.ttl)) {
@@ -369,7 +365,6 @@ export class MultiURGenerator {
    * FR-013: Multi-part UR generation
    */
   async handleGenerate() {
-    console.log('[MultiURGenerator] handleGenerate() called');
 
     try {
       // Validate parameters first
@@ -423,12 +418,6 @@ export class MultiURGenerator {
         this.state.encoder.repeatAfterRatio === -1 ? 0 : this.state.encoder.repeatAfterRatio  // Convert -1 to 0 for encoder
       );
 
-      console.log('[MultiURGenerator] Encoder initialized:', {
-        maxLen: this.state.encoder.maxFragmentLength,
-        minLen: this.state.encoder.minFragmentLength,
-        ratio: this.state.encoder.repeatAfterRatio,
-        isInfinite: this.state.encoder.isInfiniteMode
-      });
 
       // Get original block count (for encoder grid visualization)
       // This is the expected part count for pure fragments
@@ -752,10 +741,8 @@ export class MultiURGenerator {
    * FR-020: Animation controls
    */
   startAnimation() {
-    console.log('[MultiURGenerator] startAnimation() called');
 
     if (this.state.animation.isPlaying) {
-      console.log('[MultiURGenerator] Animation already playing');
       return;
     }
 
@@ -779,7 +766,6 @@ export class MultiURGenerator {
    * Stop animation
    */
   stopAnimation() {
-    console.log('[MultiURGenerator] stopAnimation() called');
 
     this.state.animation.isPlaying = false;
 
@@ -797,7 +783,6 @@ export class MultiURGenerator {
    * Restart animation (reset to frame 0)
    */
   restartAnimation() {
-    console.log('[MultiURGenerator] restartAnimation() called');
 
     this.stopAnimation();
     this.state.animation.currentPartIndex = 0;
@@ -1034,12 +1019,10 @@ export class MultiURGenerator {
     }
 
     try {
-      console.log('[MultiURGenerator] Starting GIF export with gifenc...');
 
       // Calculate delay based on current FPS (in milliseconds for gifenc)
       const fps = this.state.animation.fps || 5;
       const delay = Math.round(1000 / fps); // Convert FPS to milliseconds
-      console.log('[MultiURGenerator] FPS:', fps, 'Delay:', delay, 'ms');
 
       // Show progress
       updateStatus(
@@ -1050,7 +1033,6 @@ export class MultiURGenerator {
 
       // Create GIF encoder
       const gif = GIFEncoder();
-      console.log('[MultiURGenerator] GIF encoder created');
 
       // Create temporary canvas for rendering frames
       const tempCanvas = document.createElement('canvas');
@@ -1062,8 +1044,6 @@ export class MultiURGenerator {
       for (let i = 0; i < this.state.encoder.parts.length; i++) {
         const urPart = this.state.encoder.parts[i];
         const urString = typeof urPart === 'string' ? urPart : urPart.toString();
-        
-        console.log(`[MultiURGenerator] Rendering frame ${i + 1}/${this.state.encoder.parts.length}`);
         
         // Generate QR code on temporary canvas
         await QRCode.toCanvas(
@@ -1103,7 +1083,6 @@ export class MultiURGenerator {
 
       // Finish encoding
       gif.finish();
-      console.log('[MultiURGenerator] GIF encoding finished');
 
       // Get the GIF buffer as Uint8Array
       const buffer = gif.bytes();
@@ -1119,7 +1098,6 @@ export class MultiURGenerator {
       // Cleanup
       URL.revokeObjectURL(url);
       
-      console.log('[MultiURGenerator] GIF download triggered, size:', blob.size, 'bytes');
       
       updateStatus(
         this.state.ui.statusElement,
@@ -1139,7 +1117,6 @@ export class MultiURGenerator {
    * Cleanup on tab deactivation
    */
   destroy() {
-    console.log('[MultiURGenerator] destroy() called');
 
     // Stop animation
     this.stopAnimation();

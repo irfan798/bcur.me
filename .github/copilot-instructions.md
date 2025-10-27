@@ -315,7 +315,6 @@ js/                # ✅ IMPLEMENTED - Modular ES6 modules
   ├── scanner.js         # Tab 3: QR Scanner & Fountain Decoder ✅
   ├── registry.js        # Tab 4: Registry Browser ✅
   ├── registry-item-ui.js # Property Inspector & Console Integration (540 lines) ✅
-  ├── registry-loader.js  # Dynamic registry package loading ✅
   ├── router.js          # Hash-based navigation ✅
   └── shared.js          # Common utilities (cache, debounce, errors) ✅
 css/               # ✅ IMPLEMENTED - Modular stylesheets

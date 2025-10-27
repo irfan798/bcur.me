@@ -150,7 +150,6 @@ bcur.me/
 │   ├── scanner.js       # Tab 3: QR Scanner with fountain decoder
 │   ├── registry.js      # Tab 4: Registry Browser & console playground
 │   ├── router.js        # Hash-based routing (#converter, #multi-ur, etc.)
-│   ├── registry-loader.js # Dynamic registry package loading
 │   └── shared.js        # Utilities (cache, debounce, errors)
 ├── css/
 │   ├── main.css         # Global styles
@@ -173,11 +172,6 @@ bcur.me/
 - Registry package preloading (background, silent)
 - Debounced input handling
 
-**RegistryLoader Module** (`js/registry-loader.js`):
-- `loadRegistryPackage(key)` - Dynamic package loading from CDN
-- `loadAllRegistryPackages()` - Parallel loading of all 6 packages
-- `preloadPackages()` - Background preload (non-blocking)
-- Package cache with error recovery
 
 ## 🗺️ Roadmap
 

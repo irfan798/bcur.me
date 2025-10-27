@@ -183,7 +183,6 @@ class RegistryBrowser {
      * and stores metadata (tag, URType, CDDL, etc.)
      */
     enumerateRegistryTypes() {
-        console.log('[Registry] Enumerating registry types...');
 
         this.registryTypes = [];
         const packageMapping = {
@@ -230,7 +229,6 @@ class RegistryBrowser {
             }
             return a.urType.localeCompare(b.urType);
         });
-
         console.log(`[Registry] Found ${this.registryTypes.length} registered types`);
         console.table(this.registryTypes.map(t => ({
             Package: t.package,
@@ -918,9 +916,6 @@ class RegistryBrowser {
                 return this.registryTypes.find(t => t.urType === urType) || null;
             }
         };
-
-        console.log('%c[Registry Playground] API available at window.registryPlayground', 'color: #4CAF50; font-weight: bold');
-        console.log('  Available methods: createItem, createFromDecoded, encode, decode, validate, listTypes, getType');
     }
 }
 

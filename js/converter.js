@@ -43,14 +43,19 @@ import { RegistryItemUIMixin } from './registry-item-ui.js';
 // Extract cbor2 functions for CBOR diagnostic output
 const { comment, diagnose } = cbor2;
 
-// Log registry package loading status
-console.log('%c[Registry] Loading UR Registry Packages', 'font-weight: bold; color: #2196F3');
-console.log('  ✓ blockchain-commons:', blockchainCommons ? 'loaded' : 'failed');
-console.log('  ✓ coin-identity:', coinIdentity ? 'loaded' : 'failed');
-console.log('  ✓ ur-sync:', urSync ? 'loaded' : 'failed');
-console.log('  ✓ hex-string:', hexString ? 'loaded' : 'failed');
-console.log('  ✓ ur-sign:', urSign ? 'loaded' : 'failed');
-console.log('  ✓ ur-uuid:', urUuid ? 'loaded' : 'failed');
+// Check for package loading failures
+const loadedPackages = [
+    ['blockchain-commons', blockchainCommons],
+    ['coin-identity', coinIdentity],
+    ['ur-sync', urSync],
+    ['hex-string', hexString],
+    ['ur-sign', urSign],
+    ['ur-uuid', urUuid]
+];
+const failedPackages = loadedPackages.filter(([_, pkg]) => !pkg).map(([name]) => name);
+if (failedPackages.length > 0) {
+    console.error('[Registry] Failed to load packages:', failedPackages.join(', '));
+}
 
 // Make registry packages available globally for debugging
 window.registryPackages = {
@@ -89,15 +94,6 @@ for (const [packageName, packageExports] of Object.entries(window.registryPackag
 console.log('%c[Registry] Packages available in window.registryPackages', 'color: #4CAF50');
 console.log('%c[Registry] UrRegistry available in window.UrRegistry', 'color: #4CAF50');
 console.log('%c[Registry] UR class available in window.UR', 'color: #4CAF50');
-console.log('%c[Console] bc-ur library classes exposed:', 'color: #FF9800; font-weight: bold');
-console.log('  • window.UR - Core UR class');
-console.log('  • window.BytewordEncoding - Bytewords encoder/decoder');
-console.log('  • window.UrFountainEncoder - Multi-part UR encoder');
-console.log('  • window.UrFountainDecoder - Multi-part UR decoder');
-console.log('%c[Console] Registry item classes exposed:', 'color: #9C27B0; font-weight: bold');
-for (const [className, packageName] of Object.entries(registryClasses)) {
-    console.log(`  • window.${className} (from ${packageName})`);
-}
 
 // Canonical ordered stages for pipeline visualization
 const PIPELINE_STAGES = ['multiur', 'ur', 'bytewords', 'hex', 'decoded'];
@@ -170,7 +166,6 @@ class FormatConverter {
             const scannerData = sessionStorage.getItem('forward-scanner');
             if (scannerData) {
                 const data = JSON.parse(scannerData);
-                console.log('[Converter] Received forwarded data from scanner:', data);
                 
                 // Set input value
                 this.inputElement.value = data.ur;
