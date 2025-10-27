@@ -251,6 +251,27 @@ export class QRScanner {
   }
   
   /**
+   * Cleanup when tab is deactivated
+   * Called by router when navigating away from scanner tab
+   */
+  cleanup() {
+    // Stop camera and scanning
+    this.stopCamera();
+    
+    // Destroy scanner instance to release camera resources
+    if (this.scanner) {
+      this.scanner.destroy();
+      this.scanner = null;
+    }
+    
+    // Clear any pending timers
+    if (this.noQrTimer) {
+      clearTimeout(this.noQrTimer);
+      this.noQrTimer = null;
+    }
+  }
+  
+  /**
    * Handle QR code detected
    * FR-023: Auto-detect and decode QR codes
    * FR-024: Use UrFountainDecoder to assemble multi-part URs
@@ -534,8 +555,6 @@ export class QRScanner {
     // Show type mismatch warning
     this.updateTypeMismatchWarning();
     
-    // Show troubleshooting tips
-    this.updateTroubleshootingTips();
   }
   
   /**
@@ -688,33 +707,7 @@ export class QRScanner {
       warningEl.style.display = 'none';
     }
   }
-  
-  /**
-   * Update troubleshooting tips
-   * FR-031: Show tips if no QR detected after 10s
-   */
-  updateTroubleshootingTips() {
-    const tipsEl = this.container.querySelector('#troubleshooting-tips');
-    if (!tipsEl) return;
     
-    if (this.state.ui.showTroubleshooting) {
-      tipsEl.innerHTML = `
-        <strong>Having trouble scanning? Try these tips:</strong>
-        <ul>
-          <li><strong>Distance:</strong> Hold device 6-12 inches (15-30cm) from QR code</li>
-          <li><strong>Focus:</strong> Tap screen to trigger autofocus if QR looks blurry</li>
-          <li><strong>Lighting:</strong> Ensure good lighting - avoid shadows and glare</li>
-          <li><strong>Stability:</strong> Hold camera steady for 2-3 seconds</li>
-          <li><strong>Size:</strong> QR should fill 40-60% of screen for best results</li>
-          <li><strong>Angle:</strong> Hold camera perpendicular to QR code (not tilted)</li>
-        </ul>
-      `;
-      tipsEl.style.display = 'block';
-    } else {
-      tipsEl.style.display = 'none';
-    }
-  }
-  
   /**
    * Show error message
    */
@@ -788,5 +781,10 @@ function handleHashChange() {
         }, 100);
       }
     }, 50);
+  } else {
+    // Tab deactivated - cleanup scanner resources
+    if (scannerInstance) {
+      scannerInstance.cleanup();
+    }
   }
 }
