@@ -63,7 +63,7 @@ export class MultiURGenerator {
       // QR code state
       qr: {
         canvasElement: null,
-        qrSize: 600,           // px
+        qrSize: 600,           // px (base size, will be calculated responsively)
         errorCorrectionLevel: 'L',
         currentQRDataURL: null,
         mode: 'alphanumeric'   // Alphanumeric encoding for compact QR
@@ -112,6 +112,24 @@ export class MultiURGenerator {
       console.error('[MultiURGenerator] Initialization error:', error);
       handleError(error, this.container, 'Multi-UR Generator initialization failed');
     }
+  }
+
+  /**
+   * Calculate responsive QR size based on viewport
+   * Mobile: Use full width for easy scanning, Desktop: max 600px
+   */
+  getResponsiveQRSize() {
+    const viewportWidth = window.innerWidth;
+    
+    // Mobile breakpoint
+    if (viewportWidth <= 768) {
+      // Use full viewport width on mobile (container padding is removed via CSS)
+      // No need to subtract margins since CSS handles the full-width breakout
+      return Math.min(viewportWidth, 600);
+    }
+    
+    // Desktop: use fixed 600px
+    return 600;
   }
 
   /**
@@ -227,6 +245,21 @@ export class MultiURGenerator {
     if (previousFrameBtn) {
       previousFrameBtn.addEventListener('click', () => this.previousFrame());
     }
+
+    // Window resize listener for responsive QR sizing
+    this.resizeHandler = () => {
+      // Debounce resize events
+      if (this.resizeTimeout) {
+        clearTimeout(this.resizeTimeout);
+      }
+      this.resizeTimeout = setTimeout(() => {
+        // Re-render current frame if we have an active encoder
+        if (this.state.encoder.instance && this.state.qr.canvasElement) {
+          this.renderCurrentFrame();
+        }
+      }, 250); // Wait 250ms after resize stops
+    };
+    window.addEventListener('resize', this.resizeHandler);
   }
 
   /**
@@ -562,12 +595,13 @@ export class MultiURGenerator {
       }
 
       // Generate QR code
+      const responsiveSize = this.getResponsiveQRSize();
       await QRCode.toCanvas(
         this.state.qr.canvasElement,
         currentPart,
         {
           errorCorrectionLevel: this.state.qr.errorCorrectionLevel,
-          width: this.state.qr.qrSize,
+          width: responsiveSize,
           margin: 2
           // Note: 'mode' option for alphanumeric is not directly supported in qrcode@1.5.3
           // The library auto-detects best encoding mode based on content
@@ -1034,10 +1068,13 @@ export class MultiURGenerator {
       // Create GIF encoder
       const gif = GIFEncoder();
 
+      // Use responsive size for GIF export
+      const responsiveSize = this.getResponsiveQRSize();
+
       // Create temporary canvas for rendering frames
       const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = this.state.qr.qrSize;
-      tempCanvas.height = this.state.qr.qrSize;
+      tempCanvas.width = responsiveSize;
+      tempCanvas.height = responsiveSize;
       const ctx = tempCanvas.getContext('2d');
 
       // Render each UR part to a frame
@@ -1051,13 +1088,13 @@ export class MultiURGenerator {
           urString,
           {
             errorCorrectionLevel: this.state.qr.errorCorrectionLevel,
-            width: this.state.qr.qrSize,
+            width: responsiveSize,
             margin: 2
           }
         );
 
         // Get image data from canvas
-        const imageData = ctx.getImageData(0, 0, this.state.qr.qrSize, this.state.qr.qrSize);
+        const imageData = ctx.getImageData(0, 0, responsiveSize, responsiveSize);
         
         // Quantize colors to create palette (max 256 colors for GIF)
         const palette = quantize(imageData.data, 256);
@@ -1066,7 +1103,7 @@ export class MultiURGenerator {
         const index = applyPalette(imageData.data, palette);
         
         // Add frame to GIF
-        gif.writeFrame(index, this.state.qr.qrSize, this.state.qr.qrSize, {
+        gif.writeFrame(index, responsiveSize, responsiveSize, {
           palette,
           delay
         });
@@ -1120,6 +1157,14 @@ export class MultiURGenerator {
 
     // Stop animation
     this.stopAnimation();
+
+    // Remove resize listener
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+    if (this.resizeTimeout) {
+      clearTimeout(this.resizeTimeout);
+    }
 
     // Clear state
     this.state.encoder.instance = null;

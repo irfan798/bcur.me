@@ -179,6 +179,11 @@ body {
     .made-by {
         justify-content: center;
     }
+    
+    /* Reduce container padding on mobile to maximize space */
+    .container {
+        padding: 20px 16px;
+    }
 }
 
 .converter-panel {

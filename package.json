@@ -5,7 +5,7 @@
   "main": "index.html",
   "type": "module",
   "scripts": {
-    "dev": "live-server --port=8000 --host=localhost --open=/ --ignore=.git,node_modules,reference_projects",
+    "dev": "live-server --port=8000 --open=/ --ignore=.git,node_modules,reference_projects",
     "start": "yarn dev"
   },
   "repository": {
