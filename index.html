@@ -120,7 +120,7 @@
                             <option value="decoded-json">📊 Decoded CBOR (JSON)</option>
                             <option value="decoded-diagnostic">📋 Decoded CBOR (Diagnostic)</option>
                             <option value="decoded-commented">💬 Decoded CBOR (Commented)</option>
-                            <option value="decoded-js">🔧 Decoded CBOR (JavaScript)</option>
+                            <option value="decoded-js" selected>🔥 Decoded to JavaScript</option>
                         </select>
                         <select id="outputBytewordsStyle" class="bytewords-style-select" style="display:none;">
                             <option value="minimal">Minimal</option>
@@ -146,6 +146,14 @@
                         placeholder="Converted output will appear here..."
                         spellcheck="false"
                     ></textarea>
+
+                    <!-- Console Hint for Decoded to JavaScript -->
+                    <div id="console-hint" style="display:none; margin-top:12px; padding:12px; background:#f6f8fa; border:1px solid #e1e4e8; border-radius:6px;">
+                        <div style="display:flex; align-items:center; gap:8px; color:#586069; font-size:0.9em;">
+                            <span style="font-size:1.2em;">💡</span>
+                            <span><strong>Pro tip:</strong> Open browser DevTools (F12 or Ctrl+Shift+I) to interact with <code style="background:#fff; padding:2px 6px; border-radius:3px; color:#0366d6;">window.$lastDecoded</code> and explore the decoded object</span>
+                        </div>
+                    </div>
 
                     <!-- Placeholder for registry UI - will render below -->
                     <div id="registry-ui-placeholder"></div>

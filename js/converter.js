@@ -8,7 +8,6 @@
  * - Hex (CBOR binary as hexadecimal)
  * - Decoded CBOR (4 formats: JSON, Diagnostic, Commented, JavaScript)
  *
- * Refactored from demo.js into modular architecture for multi-tab BC-UR playground.
  */
 
 // Import BC-UR library components from CDN
@@ -30,9 +29,6 @@ import * as urSync from 'https://esm.sh/@ngraveio/ur-sync@2.0.1-beta.2?dev';
 import * as hexString from 'https://esm.sh/@ngraveio/ur-hex-string@2.0.1-beta.2?dev';
 import * as urSign from 'https://esm.sh/@ngraveio/ur-sign@2.0.1-beta.2?dev';
 import * as urUuid from 'https://esm.sh/@ngraveio/ur-uuid@2.0.1-beta.2?dev';
-
-// Import QR code generation library
-import QRCode from 'https://esm.sh/qrcode@1.5.3';
 
 // Import shared utilities
 import { LRUCache, updateStatus, handleError, clearOutput as clearOutputUtil } from './shared.js';
@@ -141,6 +137,9 @@ class FormatConverter {
         // Send to Multi-UR Generator button
         this.sendToMultiURBtn = document.getElementById('sendToMultiUR');
 
+        // Console hint for decoded-js output
+        this.consoleHintElement = document.getElementById('console-hint');
+
         // Initialize console debug interface
         this.initializeConsoleDebug();
 
@@ -149,6 +148,9 @@ class FormatConverter {
 
         this.setupEventListeners();
         this.initializeExamples();
+
+        // Initialize console hint visibility (since decoded-js is default)
+        this.toggleConsoleHint();
 
         // Check for forwarded data from other tabs (e.g., scanner)
         this.checkForwardedData();
@@ -706,6 +708,7 @@ class FormatConverter {
         });
         this.outputFormatElement.addEventListener('change', () => {
             this.toggleBytewordsStyleSelector('output');
+            this.toggleConsoleHint();
             this.handleConversion();
         });
 
@@ -1485,6 +1488,14 @@ class FormatConverter {
             if (this.outputBytewordsStyle) {
                 this.outputBytewordsStyle.style.display = (format === 'bytewords') ? 'inline-block' : 'none';
             }
+        }
+    }
+
+    /** Toggle console hint visibility for decoded-js output */
+    toggleConsoleHint() {
+        if (this.consoleHintElement) {
+            const format = this.outputFormatElement.value;
+            this.consoleHintElement.style.display = (format === 'decoded-js') ? 'block' : 'none';
         }
     }
 }
