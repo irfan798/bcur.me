@@ -28,7 +28,9 @@ jobs:
         run: |
           mkdir -p deploy
           cp index.html deploy/
-          cp demo.js deploy/
+          cp README.md deploy/
+          cp -r js deploy/
+          cp -r css deploy/
       
       - name: Setup Pages
         uses: actions/configure-pages@v4

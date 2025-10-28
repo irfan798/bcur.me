@@ -86,7 +86,6 @@ bcur.me/
 │   ├── scanner.js          # Tab 3: QR Scanner
 │   ├── registry.js         # Tab 4: Registry Browser
 │   ├── router.js           # Hash-based tab routing
-│   ├── registry-loader.js  # Dynamic package loading
 │   └── shared.js           # Utilities (cache, debounce, errors)
 ├── css/
 │   ├── main.css            # Global styles
@@ -399,113 +398,6 @@ import { createStore } from 'redux';
 
 // Global mutable state (WRONG - hard to debug)
 let globalUR = null;
-```
-
-### 4. Dynamic Registry Loading
-
-✅ **DO**:
-```javascript
-// registry-loader.js
-export async function loadRegistryPackage(key) {
-  const packages = {
-    'sync': '@ngraveio/ur-sync',
-    'sign': '@ngraveio/ur-sign'
-  };
-  
-  const module = await import(`https://esm.sh/${packages[key]}`);
-  return module;
-}
-
-// Usage: load on-demand
-const urSync = await loadRegistryPackage('sync');
-```
-
-❌ **DON'T**:
-```javascript
-// Bundle all upfront (WRONG - performance)
-import * as allPackages from './all-registry-packages.js';
-```
-
-### 5. Registry Item Decoding
-
-✅ **DO**:
-```javascript
-// converter.js - Decode CBOR to Registry Item
-async decodeToRegistryItem(decodedCbor, urType) {
-  try {
-    // Load appropriate registry package
-    const { loadRegistryPackage } = await import('./registry-loader.js');
-    const packageKey = this.getPackageKeyForType(urType); // Maps type to package
-    const module = await loadRegistryPackage(packageKey);
-    
-    // Decode using library's fromDataItem
-    const registryItem = module.fromDataItem(decodedCbor);
-    
-    // Expose to console
-    window.$lastRegistryItem = registryItem;
-    window.$lastDecoded = decodedCbor; // Preserve raw CBOR
-    
-    return { registryItem, error: null };
-  } catch (err) {
-    // Silent fallback to CBOR views
-    console.warn(`Registry Item decode failed: ${err.message}`);
-    return { registryItem: null, error: err.message };
-  }
-}
-
-// Render expandable tree view (DevTools-style)
-renderRegistryItemView(registryItem, container) {
-  const tree = this.createTreeNode(
-    registryItem.constructor.name, // e.g., "DetailedAccount"
-    'class',
-    registryItem
-  );
-  
-  // Show common methods
-  const methods = ['encode', 'getCbor', 'toDataItem'];
-  // Toggle for type-specific methods
-  
-  container.appendChild(tree);
-}
-```
-
-**Type to Package Mapping** (getPackageKeyForType):
-```javascript
-const typeToPackage = {
-  'crypto-seed': 'blockchain-commons',
-  'crypto-hdkey': 'blockchain-commons',
-  'crypto-psbt': 'blockchain-commons',
-  'detailed-account': 'sync',
-  'portfolio': 'sync',
-  'coin-identity': 'coin-identity',
-  'hex-string': 'hex-string',
-  'sign-request': 'sign',
-  'uuid': 'uuid'
-};
-```
-
-❌ **DON'T**:
-```javascript
-// Manual class reconstruction (WRONG - library does this)
-function reconstructRegistryItem(cbor, type) {
-  const obj = {};
-  // ... manual property extraction
-  return obj;
-}
-
-// Blocking preload (WRONG - slow initial load)
-await loadAllRegistryPackages(); // Blocks page load
-initApp();
-```
-
-✅ **DO** (Background Preload):
-```javascript
-// converter.js constructor
-async preloadRegistryPackages() {
-  const { preloadPackages } = await import('./registry-loader.js');
-  preloadPackages(); // Non-blocking, returns immediately
-  console.log('Registry packages preloading in background');
-}
 ```
 
 ---

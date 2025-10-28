@@ -8,45 +8,6 @@ This document resolves technical unknowns and documents integration patterns for
 
 ## Research Tasks
 
-### 1. Dynamic Registry Type Loading
-
-**Decision**: Use dynamic ESM imports with lazy loading pattern
-
-**Rationale**:
-- Registry packages add significant bundle size (~200KB+ combined)
-- Users may not need all registry types in single session
-- Dynamic `import()` is native ES2020 feature (no bundler needed)
-- Enables "inject type libraries dynamically" per user requirement
-- Preserves constitution's simplicity principle (no complex module loader)
-
-**Implementation Pattern**:
-```javascript
-// registry-loader.js
-const REGISTRY_PACKAGES = {
-  'blockchain-commons': '@ngraveio/ur-blockchain-commons',
-  'coin-identity': '@ngraveio/ur-coin-identity',
-  'sync': '@ngraveio/ur-sync',
-  'hex-string': '@ngraveio/ur-hex-string',
-  'sign': '@ngraveio/ur-sign',
-  'uuid': '@ngraveio/ur-uuid'
-};
-
-export async function loadRegistryPackage(packageKey) {
-  const packageName = REGISTRY_PACKAGES[packageKey];
-  const module = await import(`https://esm.sh/${packageName}`);
-  return module;
-}
-
-// Usage: on-demand loading when user expands registry type
-const urSync = await loadRegistryPackage('sync');
-```
-
-**Alternatives Considered**:
-- Bundle all packages upfront: Rejected (violates performance goals, increases initial load)
-- Webpack/Rollup code splitting: Rejected (violates "no build tooling" constraint)
-- Service worker caching: Deferred to post-MVP (adds complexity without immediate need)
-
----
 
 ### 2. QR Code Library Integration
 

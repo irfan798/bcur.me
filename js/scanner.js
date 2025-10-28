@@ -13,7 +13,7 @@
  * - Auto-forward to converter on completion
  */
 
-import { UrFountainDecoder, UR } from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9';
+import { UrFountainDecoder, UR } from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9?dev';
 import QrScanner from 'https://esm.sh/qr-scanner@1.4.2';
 import { handleError, updateStatus } from './shared.js';
 
@@ -76,7 +76,6 @@ export class QRScanner {
     // Track if listeners have been set up to prevent duplicates
     this.listenersInitialized = false;
     
-    console.log('[QRScanner] Initialized');
   }
   
   /**
@@ -84,7 +83,6 @@ export class QRScanner {
    * Called by router on tab activation
    */
   async init(container) {
-    console.log('[QRScanner] init() called');
     this.container = container;
     
     try {
@@ -100,7 +98,6 @@ export class QRScanner {
         this.listenersInitialized = true;
       }
       
-      console.log('[QRScanner] Initialization complete');
       
       // Auto-start camera when tab is activated
       await this.startCamera();
@@ -158,12 +155,10 @@ export class QRScanner {
    * FR-022: Display live camera preview
    */
   async startCamera() {
-    console.log('[QRScanner] startCamera() called');
     
     try {
       // Check if camera is already active
       if (this.state.camera.isActive) {
-        console.log('[QRScanner] Camera already active');
         return;
       }
       
@@ -214,7 +209,6 @@ export class QRScanner {
       // Update UI
       this.updateUI();
       
-      console.log('[QRScanner] Camera started successfully');
     } catch (error) {
       console.error('[QRScanner] Camera start failed:', error);
       
@@ -237,7 +231,6 @@ export class QRScanner {
    * Stop camera and scanning
    */
   stopCamera() {
-    console.log('[QRScanner] stopCamera() called');
     
     if (this.scanner) {
       this.scanner.stop();
@@ -258,13 +251,33 @@ export class QRScanner {
   }
   
   /**
+   * Cleanup when tab is deactivated
+   * Called by router when navigating away from scanner tab
+   */
+  cleanup() {
+    // Stop camera and scanning
+    this.stopCamera();
+    
+    // Destroy scanner instance to release camera resources
+    if (this.scanner) {
+      this.scanner.destroy();
+      this.scanner = null;
+    }
+    
+    // Clear any pending timers
+    if (this.noQrTimer) {
+      clearTimeout(this.noQrTimer);
+      this.noQrTimer = null;
+    }
+  }
+  
+  /**
    * Handle QR code detected
    * FR-023: Auto-detect and decode QR codes
    * FR-024: Use UrFountainDecoder to assemble multi-part URs
    */
   handleQRDetected(result) {
     const urString = result.data;
-    console.log('[QRScanner] QR detected:', urString.substring(0, 60) + '...');
     
     // Reset no-QR timeout
     if (this.noQrTimer) {
@@ -290,7 +303,6 @@ export class QRScanner {
       // Initialize decoder if not started
       if (!this.state.decoder.instance) {
         this.state.decoder.instance = new UrFountainDecoder();
-        console.log('[QRScanner] Decoder initialized');
       }
       
       // Check for type mismatch (FR-028)
@@ -350,10 +362,6 @@ export class QRScanner {
       // For single-part URs, set progress to 100%
       this.state.decoder.progress = 1.0;
       
-      console.log('[QRScanner] UR complete:', {
-        type: this.state.decoder.urType,
-        isSinglePart: !decoder.expectedPartCount || decoder.expectedPartCount === 0
-      });
       
       return;
     }
@@ -366,11 +374,6 @@ export class QRScanner {
       this.state.decoder.progress = decoder.getProgress(); // 0.0-1.0
       this.state.decoder.urType = decoder.expectedType;
       
-      console.log('[QRScanner] Decoder progress:', {
-        decoded: this.state.decoder.decodedBlocks.filter(b => b === 1).length,
-        expected: this.state.decoder.expectedBlockCount,
-        progress: (this.state.decoder.progress * 100).toFixed(1) + '%'
-      });
     }
   }
   
@@ -379,7 +382,6 @@ export class QRScanner {
    * FR-030: Auto-forward assembled UR to converter tab
    */
   handleDecodingComplete() {
-    console.log('[QRScanner] Decoding complete!');
     
     // Stop camera
     this.stopCamera();
@@ -420,7 +422,6 @@ export class QRScanner {
    * FR-029: Provide manual reset button
    */
   resetDecoder() {
-    console.log('[QRScanner] resetDecoder() called');
     
     if (this.state.decoder.instance) {
       this.state.decoder.instance.reset();
@@ -554,8 +555,6 @@ export class QRScanner {
     // Show type mismatch warning
     this.updateTypeMismatchWarning();
     
-    // Show troubleshooting tips
-    this.updateTroubleshootingTips();
   }
   
   /**
@@ -708,33 +707,7 @@ export class QRScanner {
       warningEl.style.display = 'none';
     }
   }
-  
-  /**
-   * Update troubleshooting tips
-   * FR-031: Show tips if no QR detected after 10s
-   */
-  updateTroubleshootingTips() {
-    const tipsEl = this.container.querySelector('#troubleshooting-tips');
-    if (!tipsEl) return;
     
-    if (this.state.ui.showTroubleshooting) {
-      tipsEl.innerHTML = `
-        <strong>Having trouble scanning? Try these tips:</strong>
-        <ul>
-          <li><strong>Distance:</strong> Hold device 6-12 inches (15-30cm) from QR code</li>
-          <li><strong>Focus:</strong> Tap screen to trigger autofocus if QR looks blurry</li>
-          <li><strong>Lighting:</strong> Ensure good lighting - avoid shadows and glare</li>
-          <li><strong>Stability:</strong> Hold camera steady for 2-3 seconds</li>
-          <li><strong>Size:</strong> QR should fill 40-60% of screen for best results</li>
-          <li><strong>Angle:</strong> Hold camera perpendicular to QR code (not tilted)</li>
-        </ul>
-      `;
-      tipsEl.style.display = 'block';
-    } else {
-      tipsEl.style.display = 'none';
-    }
-  }
-  
   /**
    * Show error message
    */
@@ -747,8 +720,6 @@ export class QRScanner {
    * Cleanup on tab deactivation
    */
   destroy() {
-    console.log('[QRScanner] destroy() called');
-    
     // Stop camera
     this.stopCamera();
     
@@ -810,5 +781,10 @@ function handleHashChange() {
         }, 100);
       }
     }, 50);
+  } else {
+    // Tab deactivated - cleanup scanner resources
+    if (scannerInstance) {
+      scannerInstance.cleanup();
+    }
   }
 }

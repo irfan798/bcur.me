@@ -46,7 +46,7 @@
 
 ```
 js/converter.js (1402L), multi-ur.js, scanner.js, registry.js,
-   registry-item-ui.js (540L), registry-loader.js, router.js, shared.js
+   registry-item-ui.js (540L), router.js, shared.js
 css/main.css, tabs.css
 docs/history/ - 7 archived bug fixes
 specs/002-bc-ur-playground/ - Speckit specs

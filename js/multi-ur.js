@@ -17,7 +17,7 @@
  * - Copy-to-clipboard (individual part, all parts, current QR as PNG)
  */
 
-import { UR, UrFountainEncoder, UrFountainDecoder } from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9';
+import { UR, UrFountainEncoder, UrFountainDecoder } from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9?dev';
 import QRCode from 'https://esm.sh/qrcode@1.5.3';
 import { GIFEncoder, quantize, applyPalette } from 'https://unpkg.com/gifenc';
 import { handleError, updateStatus } from './shared.js';
@@ -63,7 +63,7 @@ export class MultiURGenerator {
       // QR code state
       qr: {
         canvasElement: null,
-        qrSize: 600,           // px
+        qrSize: 600,           // px (base size, will be calculated responsively)
         errorCorrectionLevel: 'L',
         currentQRDataURL: null,
         mode: 'alphanumeric'   // Alphanumeric encoding for compact QR
@@ -86,7 +86,6 @@ export class MultiURGenerator {
     // Track if listeners have been set up to prevent duplicates
     this.listenersInitialized = false;
 
-    console.log('[MultiURGenerator] Initialized');
   }
 
   /**
@@ -94,7 +93,6 @@ export class MultiURGenerator {
    * Called by router on tab activation
    */
   async init(container) {
-    console.log('[MultiURGenerator] init() called');
     this.container = container;
 
     try {
@@ -110,11 +108,28 @@ export class MultiURGenerator {
       // Check for forwarded data from converter
       this.checkForwardedData();
 
-      console.log('[MultiURGenerator] Initialization complete');
     } catch (error) {
       console.error('[MultiURGenerator] Initialization error:', error);
       handleError(error, this.container, 'Multi-UR Generator initialization failed');
     }
+  }
+
+  /**
+   * Calculate responsive QR size based on viewport
+   * Mobile: Use full width for easy scanning, Desktop: max 600px
+   */
+  getResponsiveQRSize() {
+    const viewportWidth = window.innerWidth;
+    
+    // Mobile breakpoint
+    if (viewportWidth <= 768) {
+      // Use full viewport width on mobile (container padding is removed via CSS)
+      // No need to subtract margins since CSS handles the full-width breakout
+      return Math.min(viewportWidth, 600);
+    }
+    
+    // Desktop: use fixed 600px
+    return 600;
   }
 
   /**
@@ -230,6 +245,21 @@ export class MultiURGenerator {
     if (previousFrameBtn) {
       previousFrameBtn.addEventListener('click', () => this.previousFrame());
     }
+
+    // Window resize listener for responsive QR sizing
+    this.resizeHandler = () => {
+      // Debounce resize events
+      if (this.resizeTimeout) {
+        clearTimeout(this.resizeTimeout);
+      }
+      this.resizeTimeout = setTimeout(() => {
+        // Re-render current frame if we have an active encoder
+        if (this.state.encoder.instance && this.state.qr.canvasElement) {
+          this.renderCurrentFrame();
+        }
+      }, 250); // Wait 250ms after resize stops
+    };
+    window.addEventListener('resize', this.resizeHandler);
   }
 
   /**
@@ -243,7 +273,6 @@ export class MultiURGenerator {
       const forwardData = sessionStorage.getItem('forward-multi-ur');
       if (forwardData) {
         const data = JSON.parse(forwardData);
-        console.log('[MultiURGenerator] Received forwarded data:', data);
 
         // Validate TTL
         if (data.ttl && (Date.now() - data.timestamp > data.ttl)) {
@@ -369,7 +398,6 @@ export class MultiURGenerator {
    * FR-013: Multi-part UR generation
    */
   async handleGenerate() {
-    console.log('[MultiURGenerator] handleGenerate() called');
 
     try {
       // Validate parameters first
@@ -423,12 +451,6 @@ export class MultiURGenerator {
         this.state.encoder.repeatAfterRatio === -1 ? 0 : this.state.encoder.repeatAfterRatio  // Convert -1 to 0 for encoder
       );
 
-      console.log('[MultiURGenerator] Encoder initialized:', {
-        maxLen: this.state.encoder.maxFragmentLength,
-        minLen: this.state.encoder.minFragmentLength,
-        ratio: this.state.encoder.repeatAfterRatio,
-        isInfinite: this.state.encoder.isInfiniteMode
-      });
 
       // Get original block count (for encoder grid visualization)
       // This is the expected part count for pure fragments
@@ -573,12 +595,13 @@ export class MultiURGenerator {
       }
 
       // Generate QR code
+      const responsiveSize = this.getResponsiveQRSize();
       await QRCode.toCanvas(
         this.state.qr.canvasElement,
         currentPart,
         {
           errorCorrectionLevel: this.state.qr.errorCorrectionLevel,
-          width: this.state.qr.qrSize,
+          width: responsiveSize,
           margin: 2
           // Note: 'mode' option for alphanumeric is not directly supported in qrcode@1.5.3
           // The library auto-detects best encoding mode based on content
@@ -752,10 +775,8 @@ export class MultiURGenerator {
    * FR-020: Animation controls
    */
   startAnimation() {
-    console.log('[MultiURGenerator] startAnimation() called');
 
     if (this.state.animation.isPlaying) {
-      console.log('[MultiURGenerator] Animation already playing');
       return;
     }
 
@@ -779,7 +800,6 @@ export class MultiURGenerator {
    * Stop animation
    */
   stopAnimation() {
-    console.log('[MultiURGenerator] stopAnimation() called');
 
     this.state.animation.isPlaying = false;
 
@@ -797,7 +817,6 @@ export class MultiURGenerator {
    * Restart animation (reset to frame 0)
    */
   restartAnimation() {
-    console.log('[MultiURGenerator] restartAnimation() called');
 
     this.stopAnimation();
     this.state.animation.currentPartIndex = 0;
@@ -1034,12 +1053,10 @@ export class MultiURGenerator {
     }
 
     try {
-      console.log('[MultiURGenerator] Starting GIF export with gifenc...');
 
       // Calculate delay based on current FPS (in milliseconds for gifenc)
       const fps = this.state.animation.fps || 5;
       const delay = Math.round(1000 / fps); // Convert FPS to milliseconds
-      console.log('[MultiURGenerator] FPS:', fps, 'Delay:', delay, 'ms');
 
       // Show progress
       updateStatus(
@@ -1050,12 +1067,14 @@ export class MultiURGenerator {
 
       // Create GIF encoder
       const gif = GIFEncoder();
-      console.log('[MultiURGenerator] GIF encoder created');
+
+      // Use responsive size for GIF export
+      const responsiveSize = this.getResponsiveQRSize();
 
       // Create temporary canvas for rendering frames
       const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = this.state.qr.qrSize;
-      tempCanvas.height = this.state.qr.qrSize;
+      tempCanvas.width = responsiveSize;
+      tempCanvas.height = responsiveSize;
       const ctx = tempCanvas.getContext('2d');
 
       // Render each UR part to a frame
@@ -1063,21 +1082,19 @@ export class MultiURGenerator {
         const urPart = this.state.encoder.parts[i];
         const urString = typeof urPart === 'string' ? urPart : urPart.toString();
         
-        console.log(`[MultiURGenerator] Rendering frame ${i + 1}/${this.state.encoder.parts.length}`);
-        
         // Generate QR code on temporary canvas
         await QRCode.toCanvas(
           tempCanvas,
           urString,
           {
             errorCorrectionLevel: this.state.qr.errorCorrectionLevel,
-            width: this.state.qr.qrSize,
+            width: responsiveSize,
             margin: 2
           }
         );
 
         // Get image data from canvas
-        const imageData = ctx.getImageData(0, 0, this.state.qr.qrSize, this.state.qr.qrSize);
+        const imageData = ctx.getImageData(0, 0, responsiveSize, responsiveSize);
         
         // Quantize colors to create palette (max 256 colors for GIF)
         const palette = quantize(imageData.data, 256);
@@ -1086,7 +1103,7 @@ export class MultiURGenerator {
         const index = applyPalette(imageData.data, palette);
         
         // Add frame to GIF
-        gif.writeFrame(index, this.state.qr.qrSize, this.state.qr.qrSize, {
+        gif.writeFrame(index, responsiveSize, responsiveSize, {
           palette,
           delay
         });
@@ -1103,7 +1120,6 @@ export class MultiURGenerator {
 
       // Finish encoding
       gif.finish();
-      console.log('[MultiURGenerator] GIF encoding finished');
 
       // Get the GIF buffer as Uint8Array
       const buffer = gif.bytes();
@@ -1119,7 +1135,6 @@ export class MultiURGenerator {
       // Cleanup
       URL.revokeObjectURL(url);
       
-      console.log('[MultiURGenerator] GIF download triggered, size:', blob.size, 'bytes');
       
       updateStatus(
         this.state.ui.statusElement,
@@ -1139,10 +1154,17 @@ export class MultiURGenerator {
    * Cleanup on tab deactivation
    */
   destroy() {
-    console.log('[MultiURGenerator] destroy() called');
 
     // Stop animation
     this.stopAnimation();
+
+    // Remove resize listener
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+    if (this.resizeTimeout) {
+      clearTimeout(this.resizeTimeout);
+    }
 
     // Clear state
     this.state.encoder.instance = null;

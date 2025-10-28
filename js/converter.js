@@ -8,7 +8,6 @@
  * - Hex (CBOR binary as hexadecimal)
  * - Decoded CBOR (4 formats: JSON, Diagnostic, Commented, JavaScript)
  *
- * Refactored from demo.js into modular architecture for multi-tab BC-UR playground.
  */
 
 // Import BC-UR library components from CDN
@@ -20,19 +19,16 @@ import {
     cbor2,                 // CBOR diagnostics (comment/diagnose)
     isRegistryItem,        // Registry item type guard
     UrRegistry             // Registry singleton for looking up classes
-} from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9';
+} from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9?dev';
 
 // Import UR Registry packages - these auto-register types on import
 // Each package's addToRegistry.js/ts runs automatically via side effects
-import * as blockchainCommons from 'https://esm.sh/@ngraveio/ur-blockchain-commons@2.0.1-beta.2';
-import * as coinIdentity from 'https://esm.sh/@ngraveio/ur-coin-identity@2.0.1-beta.2';
-import * as urSync from 'https://esm.sh/@ngraveio/ur-sync@2.0.1-beta.2';
-import * as hexString from 'https://esm.sh/@ngraveio/ur-hex-string@2.0.1-beta.2';
-import * as urSign from 'https://esm.sh/@ngraveio/ur-sign@2.0.1-beta.2';
-import * as urUuid from 'https://esm.sh/@ngraveio/ur-uuid@2.0.1-beta.2';
-
-// Import QR code generation library
-import QRCode from 'https://esm.sh/qrcode@1.5.3';
+import * as blockchainCommons from 'https://esm.sh/@ngraveio/ur-blockchain-commons@2.0.1-beta.2?dev';
+import * as coinIdentity from 'https://esm.sh/@ngraveio/ur-coin-identity@2.0.1-beta.2?dev';
+import * as urSync from 'https://esm.sh/@ngraveio/ur-sync@2.0.1-beta.2?dev';
+import * as hexString from 'https://esm.sh/@ngraveio/ur-hex-string@2.0.1-beta.2?dev';
+import * as urSign from 'https://esm.sh/@ngraveio/ur-sign@2.0.1-beta.2?dev';
+import * as urUuid from 'https://esm.sh/@ngraveio/ur-uuid@2.0.1-beta.2?dev';
 
 // Import shared utilities
 import { LRUCache, updateStatus, handleError, clearOutput as clearOutputUtil } from './shared.js';
@@ -43,14 +39,19 @@ import { RegistryItemUIMixin } from './registry-item-ui.js';
 // Extract cbor2 functions for CBOR diagnostic output
 const { comment, diagnose } = cbor2;
 
-// Log registry package loading status
-console.log('%c[Registry] Loading UR Registry Packages', 'font-weight: bold; color: #2196F3');
-console.log('  ✓ blockchain-commons:', blockchainCommons ? 'loaded' : 'failed');
-console.log('  ✓ coin-identity:', coinIdentity ? 'loaded' : 'failed');
-console.log('  ✓ ur-sync:', urSync ? 'loaded' : 'failed');
-console.log('  ✓ hex-string:', hexString ? 'loaded' : 'failed');
-console.log('  ✓ ur-sign:', urSign ? 'loaded' : 'failed');
-console.log('  ✓ ur-uuid:', urUuid ? 'loaded' : 'failed');
+// Check for package loading failures
+const loadedPackages = [
+    ['blockchain-commons', blockchainCommons],
+    ['coin-identity', coinIdentity],
+    ['ur-sync', urSync],
+    ['hex-string', hexString],
+    ['ur-sign', urSign],
+    ['ur-uuid', urUuid]
+];
+const failedPackages = loadedPackages.filter(([_, pkg]) => !pkg).map(([name]) => name);
+if (failedPackages.length > 0) {
+    console.error('[Registry] Failed to load packages:', failedPackages.join(', '));
+}
 
 // Make registry packages available globally for debugging
 window.registryPackages = {
@@ -89,15 +90,6 @@ for (const [packageName, packageExports] of Object.entries(window.registryPackag
 console.log('%c[Registry] Packages available in window.registryPackages', 'color: #4CAF50');
 console.log('%c[Registry] UrRegistry available in window.UrRegistry', 'color: #4CAF50');
 console.log('%c[Registry] UR class available in window.UR', 'color: #4CAF50');
-console.log('%c[Console] bc-ur library classes exposed:', 'color: #FF9800; font-weight: bold');
-console.log('  • window.UR - Core UR class');
-console.log('  • window.BytewordEncoding - Bytewords encoder/decoder');
-console.log('  • window.UrFountainEncoder - Multi-part UR encoder');
-console.log('  • window.UrFountainDecoder - Multi-part UR decoder');
-console.log('%c[Console] Registry item classes exposed:', 'color: #9C27B0; font-weight: bold');
-for (const [className, packageName] of Object.entries(registryClasses)) {
-    console.log(`  • window.${className} (from ${packageName})`);
-}
 
 // Canonical ordered stages for pipeline visualization
 const PIPELINE_STAGES = ['multiur', 'ur', 'bytewords', 'hex', 'decoded'];
@@ -145,6 +137,9 @@ class FormatConverter {
         // Send to Multi-UR Generator button
         this.sendToMultiURBtn = document.getElementById('sendToMultiUR');
 
+        // Console hint for decoded-js output
+        this.consoleHintElement = document.getElementById('console-hint');
+
         // Initialize console debug interface
         this.initializeConsoleDebug();
 
@@ -153,6 +148,9 @@ class FormatConverter {
 
         this.setupEventListeners();
         this.initializeExamples();
+
+        // Initialize console hint visibility (since decoded-js is default)
+        this.toggleConsoleHint();
 
         // Check for forwarded data from other tabs (e.g., scanner)
         this.checkForwardedData();
@@ -170,7 +168,6 @@ class FormatConverter {
             const scannerData = sessionStorage.getItem('forward-scanner');
             if (scannerData) {
                 const data = JSON.parse(scannerData);
-                console.log('[Converter] Received forwarded data from scanner:', data);
                 
                 // Set input value
                 this.inputElement.value = data.ur;
@@ -202,6 +199,9 @@ class FormatConverter {
         // Initialize decoded value history (max 10 entries, LRU)
         window.$decodedHistory = [];
         window.$lastDecoded = null;
+
+        // Initialize console instance detection (T069)
+        this.initializeConsoleInstanceDetection();
 
         // Initialize $cbor namespace with helper methods
         window.$cbor = {
@@ -597,6 +597,100 @@ class FormatConverter {
     }
 
     /**
+     * Initialize Console Instance Detection (T069)
+     *
+     * Monitors global scope for registry items created in console and offers
+     * "Show in Property Inspector" action.
+     *
+     * Implementation: Uses Proxy on window to detect new registry item assignments.
+     */
+    initializeConsoleInstanceDetection() {
+        // Track known registry item variables
+        window.$registryItemVariables = new Map(); // varName -> registryItem
+
+        // Add helper function for developers to manually show registry items
+        window.$showInInspector = (registryItem) => {
+            if (!registryItem) {
+                console.error('❌ No registry item provided');
+                return;
+            }
+
+            if (!isRegistryItem(registryItem)) {
+                console.error('❌ Provided value is not a registry item');
+                console.log('Use window.UrRegistry.registry to list available types');
+                return;
+            }
+
+            // Show in property inspector
+            this.showRegistryItemUI(registryItem);
+            window.$lastRegistryItem = registryItem;
+
+            console.log('%c✓ Registry item loaded in Property Inspector', 'color: #00cc66; font-weight: bold');
+            console.log('Access via: window.$lastRegistryItem');
+        };
+
+        // Add helper to list all detected registry item variables
+        window.$listRegistryItems = () => {
+            if (window.$registryItemVariables.size === 0) {
+                console.log('No registry item variables detected in console');
+                return;
+            }
+
+            console.log('%c=== Detected Registry Items ===', 'color: #0066cc; font-weight: bold');
+            for (const [varName, item] of window.$registryItemVariables.entries()) {
+                const urType = item.type?.URType || 'unknown';
+                console.log(`  • ${varName}: ${item.constructor.name} (ur:${urType})`);
+                console.log(`    ↳ Show: window.$showInInspector(${varName})`);
+            }
+        };
+
+        // Monitor console commands for registry item creation
+        // This uses a polling approach to detect new global variables that are registry items
+        setInterval(() => {
+            try {
+                // Scan window for new registry item variables
+                for (const key of Object.keys(window)) {
+                    // Skip known system variables and our own variables
+                    if (key.startsWith('$') || key.startsWith('_') ||
+                        key === 'converter' || key === 'UR' || key === 'BytewordEncoding' ||
+                        key === 'UrRegistry' || key === 'registryPackages' ||
+                        registryClasses[key]) {
+                        continue;
+                    }
+
+                    const value = window[key];
+
+                    // Check if it's a registry item we haven't seen before
+                    if (value && isRegistryItem(value) && !window.$registryItemVariables.has(key)) {
+                        window.$registryItemVariables.set(key, value);
+
+                        const urType = value.type?.URType || 'unknown';
+                        const constructorName = value.constructor.name;
+
+                        console.log(
+                            `%c🎯 Registry Item Detected: ${key}`,
+                            'color: #00cc66; font-weight: bold; font-size: 13px; background: #f0fff0; padding: 2px 6px'
+                        );
+                        console.log(`Type: ${constructorName} (ur:${urType})`);
+                        console.log(`%c💡 Show in Property Inspector:`, 'font-weight: bold');
+                        console.log(`   window.$showInInspector(${key})`);
+                        console.log(`%c📋 List all detected items:`, 'font-weight: bold');
+                        console.log(`   window.$listRegistryItems()`);
+                    }
+                }
+            } catch (error) {
+                // Silently fail - this is a best-effort monitoring feature
+            }
+        }, 2000); // Check every 2 seconds
+
+        // Log initialization
+        console.log('%c[Console] Instance detection enabled', 'color: #00cc66; font-weight: bold');
+        console.log('  • Create registry items in console and they will be auto-detected');
+        console.log('  • Use window.$showInInspector(item) to display in Property Inspector');
+        console.log('  • Use window.$listRegistryItems() to see all detected items');
+    }
+
+    /**
      * Setup Event Listeners
      * Attaches handlers for user interactions
      */
@@ -614,6 +708,7 @@ class FormatConverter {
         });
         this.outputFormatElement.addEventListener('change', () => {
             this.toggleBytewordsStyleSelector('output');
+            this.toggleConsoleHint();
             this.handleConversion();
         });
 
@@ -1393,6 +1488,14 @@ class FormatConverter {
             if (this.outputBytewordsStyle) {
                 this.outputBytewordsStyle.style.display = (format === 'bytewords') ? 'inline-block' : 'none';
             }
+        }
+    }
+
+    /** Toggle console hint visibility for decoded-js output */
+    toggleConsoleHint() {
+        if (this.consoleHintElement) {
+            const format = this.outputFormatElement.value;
+            this.consoleHintElement.style.display = (format === 'decoded-js') ? 'block' : 'none';
         }
     }
 }

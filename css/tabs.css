@@ -542,6 +542,11 @@
 /* QR Canvas Styling */
 #multi-ur-qr-canvas {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #e1e4e8;
+    border-radius: 8px;
+    display: block;
+    /* Don't set width/height here - let canvas internal dimensions control size */
+    /* This prevents distortion */
 }
 
 /* Export Button Special Styling */
@@ -572,6 +577,37 @@
     }
 
     #multi-ur-qr-canvas {
-        max-width: 90vw;
+        /* On mobile, remove borders and shadows to maximize QR visibility */
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        max-width: 100vw;
+        margin: 0;
+    }
+    
+    /* Make QR container full width with minimal padding on mobile */
+    #qr-canvas-container {
+        margin: 8px 0 !important;
+        padding: 0 !important;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw !important;
+        margin-right: -50vw !important;
+        background: #f6f8fa;
+    }
+    
+    /* QR display section - remove side padding on mobile */
+    #qr-display-section {
+        padding: 0.5rem 0;
+        overflow-x: hidden;
+        margin-left: -16px;
+        margin-right: -16px;
+    }
+    
+    /* Section label - add padding back */
+    #qr-display-section .section-label {
+        padding: 0 1rem;
     }
 }
