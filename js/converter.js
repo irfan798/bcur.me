@@ -20,6 +20,7 @@ import {
     isRegistryItem,        // Registry item type guard
     UrRegistry             // Registry singleton for looking up classes
 } from 'https://esm.sh/@ngraveio/bc-ur@2.0.0-beta.9?dev';
+import { parseEDN } from 'https://esm.sh/cbor-edn@0.2.2?dev';
 
 // Import UR Registry packages - these auto-register types on import
 // Each package's addToRegistry.js/ts runs automatically via side effects
@@ -139,6 +140,9 @@ class FormatConverter {
 
         // Console hint for decoded-js output
         this.consoleHintElement = document.getElementById('console-hint');
+
+        // Cache diagnostic parses to avoid repeated work during detection
+        this.diagnosticCache = { input: null, hex: null };
 
         // Initialize console debug interface
         this.initializeConsoleDebug();
@@ -862,7 +866,7 @@ class FormatConverter {
      * Auto-detect Input Format
      *
      * Analyzes input string to determine format type using pattern matching.
-     * Detection order: multiur → ur → hex → bytewords → decoded-json
+    * Detection order: multiur → ur → hex → bytewords → diagnostic
      *
      * @param {string} input - Raw input string
      * @returns {string|null} - Detected format name or null if unknown
@@ -907,7 +911,69 @@ class FormatConverter {
             return 'bytewords';
         }
 
+        // Diagnostic notation detection (best effort)
+        if (this.maybeDiagnosticNotation(trimmed)) {
+            try {
+                this.diagnosticToHex(trimmed);
+                return 'diagnostic';
+            } catch (_) {
+                // Ignore parsing errors during detection; user may still select manually
+            }
+        }
+
         return null;
+    }
+
+    maybeDiagnosticNotation(value) {
+        if (!value) return false;
+        const trimmed = value.trim();
+        if (!trimmed) return false;
+
+        const indicators = ["h'", "b64'", 'simple(', '(_', '{_', '[_', '<<', '>>', '::'];
+        if (indicators.some(token => trimmed.includes(token))) {
+            return true;
+        }
+
+        if (/^\d+\(/.test(trimmed)) {
+            return true;
+        }
+
+        if (/tag\(/i.test(trimmed)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    diagnosticToHex(rawInput) {
+        const trimmed = rawInput.trim();
+        if (!trimmed) {
+            throw new Error('Invalid diagnostic notation: Input cannot be empty');
+        }
+
+        if (this.diagnosticCache.input === trimmed) {
+            return this.diagnosticCache.hex;
+        }
+
+        let bytes;
+        try {
+            bytes = parseEDN(trimmed);
+        } catch (err) {
+            const message = (err && err.message ? err.message : 'Unable to parse diagnostic notation').split('\n')[0].trim();
+            throw new Error('Invalid diagnostic notation: ' + message);
+        }
+
+        if (!(bytes instanceof Uint8Array)) {
+            throw new Error('Invalid diagnostic notation: Parser returned unexpected result');
+        }
+
+        const hex = this.bytesToHex(bytes);
+        this.diagnosticCache = { input: trimmed, hex };
+        return hex;
+    }
+
+    bytesToHex(bytes) {
+        return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
     async handleConversion() {
@@ -1008,12 +1074,13 @@ class FormatConverter {
      * @returns {object} { output, usedUrType, autoDetectedUrType, registryResolved, hex, decodedValue }
      */
     async performConversion({ rawInput, fromFormat, toFormat, urTypeOverride, inputBytewordsStyle = 'minimal', outputBytewordsStyle = 'minimal' }) {
-        const norm = f => f.startsWith('decoded-') ? 'decoded' : f;
+        const norm = f => (f.startsWith('decoded-') || f === 'diagnostic') ? 'decoded' : f;
         const fromNorm = norm(fromFormat);
         const toNorm = norm(toFormat);
 
         // Guard: decoded diagnostic/commented/js cannot be a source for re-encoding
-        if (fromFormat !== 'decoded-json' && fromNorm === 'decoded' && toNorm !== 'decoded') {
+        const decodedAllowedSources = ['decoded-json', 'diagnostic'];
+        if (fromNorm === 'decoded' && toNorm !== 'decoded' && !decodedAllowedSources.includes(fromFormat)) {
             throw new Error('Decoded (non-JSON view) cannot be source for re-encoding. Switch input format to Decoded JSON.');
         }
 
@@ -1050,7 +1117,11 @@ class FormatConverter {
                 break;
             }
             case 'decoded': {
-                try { jsValue = JSON.parse(rawInput); } catch (e) { throw new Error('Invalid JSON: ' + e.message); }
+                if (fromFormat === 'diagnostic') {
+                    hex = this.diagnosticToHex(rawInput);
+                } else {
+                    try { jsValue = JSON.parse(rawInput); } catch (e) { throw new Error('Invalid JSON: ' + e.message); }
+                }
                 break;
             }
             default:
@@ -1405,7 +1476,7 @@ class FormatConverter {
 
     /** Simplified pipeline visualization with directional arrows */
     simplePipelineViz(fromFormat, toFormat, isError) {
-        const norm = f => f.startsWith('decoded-') ? 'decoded' : f;
+        const norm = f => (f.startsWith('decoded-') || f === 'diagnostic') ? 'decoded' : f;
         const fromNorm = norm(fromFormat);
         const toNorm = norm(toFormat);
         this.resetPipeline();
@@ -1468,6 +1539,7 @@ class FormatConverter {
             ur: 'Single UR',
             bytewords: 'Bytewords',
             hex: 'Hex (CBOR)',
+            diagnostic: 'Diagnostic Notation',
             decoded: 'Decoded CBOR',
             'decoded-json': 'Decoded CBOR (JSON)',
             'decoded-diagnostic': 'Decoded CBOR (Diagnostic)',
