@@ -814,7 +814,7 @@ class FormatConverter {
     initializeExamples() {
         // Add example data for testing
         this.examples = {
-            hex: 'a2626964187b646e616d65684a6f686e20446f65',
+            hex: 'a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74',
             ur: 'ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl',
             bytewords: 'oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl',
             multiur: 'ur:detailed-account/1-3/lpadaxcsfmcyionnimfdgooyadtantjlotadwkaxhdclaowdverokopdinhseerobyuepafh\nur:detailed-account/2-3/lpaoaxcsfmcyionnimfdgoisyalksaykctjshedprnuyjyfgrovawewftyghceglfxkoaywz\nur:detailed-account/3-3/lpaxaxcsfmcyionnimfdgorpkgamtantjooyadlocsdwykcfadykykaeykaeykaeidgajtzm\nur:detailed-account/4-3/lpaaaxcsfmcyionnimfdgochknurfywztenbyklufzbtylwfvwgtlspdnshsserownnbhgcl\nur:detailed-account/5-3/lpahaxcsfmcyionnimfdgosoytgohenyrfjopydmvazskopshhhyndhpryecdeyntineehdw\nur:detailed-account/6-3/lpamaxcsfmcyionnimfdgolblfgulnatsfttpkolzetblsrehlpyjthpfdecutyncmpaonty\n',
