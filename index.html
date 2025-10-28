@@ -37,7 +37,7 @@
         <div class="header">
             <div class="header-content">
                 <div class="header-text">
-                    <h1>🔄 BC-UR Playground</h1>
+                    <h1>BC-UR Playground</h1>
                     <p>Explore Uniform Resources, multi-part encoding, animated QR codes, and CBOR registry types</p>
                 </div>
                 <div class="header-links">
@@ -87,6 +87,10 @@
                 <button class="tab-button" data-tab="registry" role="tab" aria-selected="false" aria-controls="registry-tab" id="tab-registry">
                     <span class="tab-icon" aria-hidden="true">📖</span>
                     <span class="tab-label">Registry Browser</span>
+                </button>
+                <button class="tab-button" data-tab="docs" role="tab" aria-selected="false" aria-controls="docs-tab" id="tab-docs">
+                    <span class="tab-icon" aria-hidden="true">📚</span>
+                    <span class="tab-label">Documentation</span>
                 </button>
             </div>
         </nav>
@@ -525,6 +529,15 @@
             </div>
         </div>
         
+        <!-- Tab 5: Documentation -->
+        <div class="tab-content hidden" id="docs-tab" role="tabpanel" aria-labelledby="tab-docs" aria-hidden="true">
+            <div id="docs-content" class="docs-content">
+                <div style="text-align: center; padding: 40px; color: #586069;">
+                    <p>Loading documentation...</p>
+                </div>
+            </div>
+        </div>
+        
         <!-- Mobile Footer -->
         <footer class="mobile-footer">
             <div class="made-by">
@@ -616,6 +629,48 @@
                 }
             }
         };
+        
+        // Load and render README for docs tab using marked.js
+        async function loadDocumentation() {
+            const docsContent = document.getElementById('docs-content');
+            try {
+                // Import marked library
+                const { marked } = await import('https://esm.sh/marked@11.1.1');
+                
+                // Configure marked for GitHub-flavored markdown
+                marked.setOptions({
+                    gfm: true,
+                    breaks: true,
+                    headerIds: true,
+                    mangle: false
+                });
+                
+                // Fetch README
+                const response = await fetch('README.md');
+                if (!response.ok) throw new Error('Failed to load README');
+                
+                const markdown = await response.text();
+                
+                // Parse and render markdown
+                const html = marked.parse(markdown);
+                docsContent.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading documentation:', error);
+                docsContent.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #d73a49;">
+                        <p>⚠️ Failed to load documentation</p>
+                        <p style="font-size: 0.9em; color: #586069;">Please check the console for details.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Load docs when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadDocumentation);
+        } else {
+            loadDocumentation();
+        }
     </script>
     <script type="module" src="js/converter.js"></script>
     <script type="module" src="js/scanner.js"></script>

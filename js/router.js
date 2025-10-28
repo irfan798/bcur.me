@@ -4,7 +4,7 @@
  * Manages tab navigation using window.location.hash.
  * Supports deep links, sessionStorage forwarding with TTL, and cleanup on unload.
  *
- * Valid tabs: #converter, #multi-ur, #scanner, #registry
+ * Valid tabs: #converter, #multi-ur, #scanner, #registry, #docs
  * Default: #converter (when hash is empty or invalid)
  */
 
@@ -20,7 +20,7 @@
  */
 class Router {
     constructor() {
-        this.validTabs = ['converter', 'multi-ur', 'scanner', 'registry'];
+        this.validTabs = ['converter', 'multi-ur', 'scanner', 'registry', 'docs'];
         this.defaultTab = 'converter';
         this.currentTab = null;
 
