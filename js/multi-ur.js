@@ -41,7 +41,7 @@ export class MultiURGenerator {
         maxFragmentLength: 90,
         minFragmentLength: 10,
         firstSeqNum: 0,
-        repeatAfterRatio: 1.5,   // -1 = infinite, 0 = no redundancy, >0 = finite with redundancy
+        repeatAfterRatio: 0.5,   // -1 = infinite, 0 = no redundancy, >0 = finite with redundancy
         parts: [],             // Generated UR parts (finite mode)
         totalParts: 0,
         isInfiniteMode: false,  // repeatAfterRatio === -1
@@ -316,9 +316,9 @@ export class MultiURGenerator {
     let errorMsg = '';
 
     // Check min < max (no auto-swap!)
-    if (minLen >= maxLen) {
+    if (minLen > maxLen) {
       isValid = false;
-      errorMsg = 'Min fragment length must be less than max fragment length';
+      errorMsg = 'Min fragment length must be equal or less than max fragment length';
       this.minFragmentInput.style.borderColor = '#dc3545';
       this.maxFragmentInput.style.borderColor = '#dc3545';
     } else {

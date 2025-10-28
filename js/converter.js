@@ -921,6 +921,17 @@ class FormatConverter {
             }
         }
 
+        // JSON detection (must be valid JSON object or array)
+        if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
+            (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+            try {
+                JSON.parse(trimmed);
+                return 'json';
+            } catch (_) {
+                // Not valid JSON, continue detection
+            }
+        }
+
         return null;
     }
 
@@ -1074,14 +1085,14 @@ class FormatConverter {
      * @returns {object} { output, usedUrType, autoDetectedUrType, registryResolved, hex, decodedValue }
      */
     async performConversion({ rawInput, fromFormat, toFormat, urTypeOverride, inputBytewordsStyle = 'minimal', outputBytewordsStyle = 'minimal' }) {
-        const norm = f => (f.startsWith('decoded-') || f === 'diagnostic') ? 'decoded' : f;
+        const norm = f => (f.startsWith('decoded-') || f === 'diagnostic' || f === 'json') ? 'decoded' : f;
         const fromNorm = norm(fromFormat);
         const toNorm = norm(toFormat);
 
         // Guard: decoded diagnostic/commented/js cannot be a source for re-encoding
-        const decodedAllowedSources = ['decoded-json', 'diagnostic'];
+        const decodedAllowedSources = ['decoded-json', 'diagnostic', 'json'];
         if (fromNorm === 'decoded' && toNorm !== 'decoded' && !decodedAllowedSources.includes(fromFormat)) {
-            throw new Error('Decoded (non-JSON view) cannot be source for re-encoding. Switch input format to Decoded JSON.');
+            throw new Error('Decoded (non-JSON view) cannot be source for re-encoding. Switch input format to Decoded JSON or JSON.');
         }
 
         let urInstance = null;
@@ -1119,6 +1130,8 @@ class FormatConverter {
             case 'decoded': {
                 if (fromFormat === 'diagnostic') {
                     hex = this.diagnosticToHex(rawInput);
+                } else if (fromFormat === 'json') {
+                    try { jsValue = JSON.parse(rawInput); } catch (e) { throw new Error('Invalid JSON: ' + e.message); }
                 } else {
                     try { jsValue = JSON.parse(rawInput); } catch (e) { throw new Error('Invalid JSON: ' + e.message); }
                 }
@@ -1134,7 +1147,8 @@ class FormatConverter {
                 hex = urInstance.getPayloadHex();
                 usedUrType = urInstance.type;
             } else if (jsValue) {
-                hex = UR.pipeline.encode(jsValue, { until: 'hex' });
+                // Until bytewords will give us hex string, as it is the previous step in the pipeline
+                hex = UR.pipeline.encode(jsValue, { until: 'bytewords' });
             } else if (!hex) {
                 throw new Error('Unable to derive CBOR payload');
             }
@@ -1380,6 +1394,7 @@ class FormatConverter {
      */
     decodeCBOR(hexInput, format = 'decoded-json') {
         try {
+          // Check if input is already Uint8Array, else convert from hex string
             const bytes = new Uint8Array(hexInput.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 
             if (format === 'decoded-diagnostic') {
@@ -1476,7 +1491,7 @@ class FormatConverter {
 
     /** Simplified pipeline visualization with directional arrows */
     simplePipelineViz(fromFormat, toFormat, isError) {
-        const norm = f => (f.startsWith('decoded-') || f === 'diagnostic') ? 'decoded' : f;
+        const norm = f => (f.startsWith('decoded-') || f === 'diagnostic' || f === 'json') ? 'decoded' : f;
         const fromNorm = norm(fromFormat);
         const toNorm = norm(toFormat);
         this.resetPipeline();
@@ -1540,6 +1555,7 @@ class FormatConverter {
             bytewords: 'Bytewords',
             hex: 'Hex (CBOR)',
             diagnostic: 'Diagnostic Notation',
+            json: 'JSON',
             decoded: 'Decoded CBOR',
             'decoded-json': 'Decoded CBOR (JSON)',
             'decoded-diagnostic': 'Decoded CBOR (Diagnostic)',

@@ -122,6 +122,7 @@
                             <option value="bytewords">📝 Bytewords</option>
                             <option value="hex">🔢 Hex (CBOR)</option>
                             <option value="diagnostic">📋 Diagnostic Notation</option>
+                            <option value="json">📊 JSON</option>
                         </select>
                         <label for="inputBytewordsStyle" class="visually-hidden">Input bytewords style</label>
                         <select id="inputBytewordsStyle" class="bytewords-style-select" style="display:none;" aria-label="Select input bytewords style">
@@ -138,7 +139,7 @@
                         aria-label="Input text for conversion"
                         aria-describedby="input-format-desc"
                     ></textarea>
-                    <div id="input-format-desc" class="visually-hidden">Enter UR, hex, bytewords, multi-part UR, or CBOR diagnostic notation for conversion</div>
+                    <div id="input-format-desc" class="visually-hidden">Enter UR, hex, bytewords, multi-part UR, CBOR diagnostic notation, or JSON for conversion</div>
                 </div>
 
                 <div class="output-section">
@@ -302,7 +303,7 @@
                         </div>
                         <div>
                             <label for="repeat-after-ratio" style="display: block; margin-bottom: 4px; font-size: 0.9em; color: #586069;">Repeat After Ratio (-1 = infinite, 0 = no redundancy):</label>
-                            <input type="number" id="repeat-after-ratio" value="1.5" min="-1" max="10" step="0.1" style="width: 100%; padding: 8px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;">
+                            <input type="number" id="repeat-after-ratio" value="0.5" min="-1" max="10" step="0.1" style="width: 100%; padding: 8px; border: 2px solid #e1e4e8; border-radius: 6px; font-size: 14px;">
                         </div>
                     </div>
 
