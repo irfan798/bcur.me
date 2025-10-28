@@ -23,6 +23,7 @@ export const RegistryItemUIMixin = {
         this.currentRegistryItem = null;
         this.currentTreeState = {}; // Track collapsed/expanded nodes
         this.showAllProperties = false; // Toggle for showing all properties vs just .data
+        this.showFunctions = false; // Toggle for showing functions in tree view (default: hidden)
 
         // Setup event listeners for registry item UI
         this.setupRegistryItemListeners();
@@ -101,6 +102,10 @@ export const RegistryItemUIMixin = {
                         <input type="checkbox" id="show-all-properties" ${this.showAllProperties ? 'checked' : ''}>
                         <span>Show All Properties</span>
                     </label>
+                    <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" id="show-functions" ${this.showFunctions ? 'checked' : ''}>
+                        <span>Show Functions</span>
+                    </label>
                 </div>
                 <div class="registry-type-badge" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: white; border: 1px solid #667eea; border-radius: 6px; font-size: 11px; cursor: pointer;" data-ur-type="${urType}" data-tag="${tag}" title="Click for CDDL schema">
                     <span style="color: #667eea; font-weight: 600;">ur:${urType}</span>
@@ -149,10 +154,18 @@ export const RegistryItemUIMixin = {
 
         // Attach toggle handlers for inspector controls
         const showAllPropsCheckbox = document.getElementById('show-all-properties');
+        const showFunctionsCheckbox = document.getElementById('show-functions');
         
         if (showAllPropsCheckbox) {
             showAllPropsCheckbox.addEventListener('change', (e) => {
                 this.showAllProperties = e.target.checked;
+                this.renderTreeView(this.currentRegistryItem); // Re-render
+            });
+        }
+
+        if (showFunctionsCheckbox) {
+            showFunctionsCheckbox.addEventListener('change', (e) => {
+                this.showFunctions = e.target.checked;
                 this.renderTreeView(this.currentRegistryItem); // Re-render
             });
         }
@@ -246,7 +259,7 @@ export const RegistryItemUIMixin = {
         const commonRegistryMethods = ['toUr', 'toHex', 'toCBOR', 'toBytes', 'preCBOR', 'encodeKeys', 'decodeKeys'];
 
         // Internal properties to filter out when not showing all
-        const internalProps = ['type', 'keyMap', 'allowKeysNotInMap'];
+        const internalProps = ['keyMap', 'allowKeysNotInMap'];
 
         // Check if this is a registry item (has .data and .type.URType)
         const isRegistryItem = obj && obj.data && obj.type && typeof obj.type === 'object' && obj.type.URType;
@@ -305,6 +318,9 @@ export const RegistryItemUIMixin = {
             const isNestedRegistryItem = value && typeof value === 'object' && value.type && typeof value.type === 'object' && value.type.URType;
 
             if (isFunction) {
+                // Skip functions if showFunctions is false
+                if (!this.showFunctions) return;
+                
                 // Render function as clickable item with execute button
                 const methodId = `method-${valuePath.replace(/\./g, '-')}`;
                 // Build executable path by appending function call to parent path

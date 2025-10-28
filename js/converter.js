@@ -819,6 +819,7 @@ class FormatConverter {
             bytewords: 'oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl',
             multiur: 'ur:detailed-account/1-3/lpadaxcsfmcyionnimfdgooyadtantjlotadwkaxhdclaowdverokopdinhseerobyuepafh\nur:detailed-account/2-3/lpaoaxcsfmcyionnimfdgoisyalksaykctjshedprnuyjyfgrovawewftyghceglfxkoaywz\nur:detailed-account/3-3/lpaxaxcsfmcyionnimfdgorpkgamtantjooyadlocsdwykcfadykykaeykaeykaeidgajtzm\nur:detailed-account/4-3/lpaaaxcsfmcyionnimfdgochknurfywztenbyklufzbtylwfvwgtlspdnshsserownnbhgcl\nur:detailed-account/5-3/lpahaxcsfmcyionnimfdgosoytgohenyrfjopydmvazskopshhhyndhpryecdeyntineehdw\nur:detailed-account/6-3/lpamaxcsfmcyionnimfdgolblfgulnatsfttpkolzetblsrehlpyjthpfdecutyncmpaonty\n',
             'detailed-account': 'ur:detailed-account/oyadtantjlotadwkaxhdclaowdverokopdinhseeroisyalksaykctjshedprnuyjyfgrovawewftyghceglrpkgamtantjooyadlocsdwykcfadykykaeykaeykionnimfd',
+            'eth-sign-request': 'ur:sign-request/osadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaotaoyrhoeadayaocsfnaxtantjooyadlecsdwykcsfnykaeykaewkaewkaagtyajzlalpaapdchspaelfgmaymwahjeglflgmfphffecxhtfegmgwamadatksdrdyksemeeeyieeoecfxiaeneneoeefxdyeceoeyeseyechseoideteeeefwiaeeeceeiheeeeeoetiyeeeeihjecmiawp',
             'portfolio': 'ur:portfolio/oeadlrtaoyrkoeadtaoyrhoeadayaocsfnaolytaoyrdoeadtantjlonadwkaxhdclaxdaaxtsuooxzmahmwwtfzgthfcslpfwoylgmnatlrfyeheestcmchluselynsfstyaahdcxtdqdinaeesjzmolfzsbbidlpiyhddlcximhltirfsptlvsmohscsamsgzoaxadwtamtantjooyadlncsdwykcsfnykaeykattantjooyadlraewklawkaolytaadatghnbroinmeswclluensettntgedmnnpftoenamwmfdtaoyrkoeadtaoyrhoeadayaocfadykaolytaoyrdoeadtantjlotadwkaxhdclaowdverokopdinhseeroisyalksaykctjshedprnuyjyfgrovawewftyghceglrpkgamtantjooyadlncsdwykcfadykykaeykaolyksdwfegdimfghgieieecfpkpiyjsgugujsihgteyjsglehksknkkidhsjofxetfleektfeflfljehtktkkghfyjyehkotaoyrkoeadtaoyrhotadayaocsfnaxlycsldaolytaoyrdoeadtantjlonadwkaxhdclaxdaaxtsuooxzmahmwwtfzgthfcslpfwoylgmnatlrfyeheestcmchluselynsfstyaahdcxtdqdinaeesjzmolfzsbbidlpiyhddlcximhltirfsptlvsmohscsamsgzoaxadwtamtantjooyadlncsdwykcsfnykaeykattantjooyadlraewkadwkaolytaadatghdimerfoywzuefghswelootbnnlosptfynypdfpjytaoyrkoeadtaoyrhoeadayaoaeaolytaoyrdoyadtantjyoeadioktjeisdefzdydtaolytantjlonadwkaxhdclaxwmfmdeiamecsdsemgtvsjzcncygrkowtrontzschgezokstswkkscfmklrtauteyaahdcxiehfonurdppfyntapejpproypegrdawkgmaewejlsfdtsrfybdehcaflmtrlbdhpamtantjooyadlncsdwykaeykaeykattantjooyadlraewkaewkaotaoyrfoxadgdbgeehfksbgeehfksaotaaagwotadcyjsaoidihjtaximehdmeydmehdpehdmjpiaaajeglflgmfphffecxhtfegmgwnyfplngl',
         };
     }
@@ -830,7 +831,7 @@ class FormatConverter {
             // Set format based on example type
             if (type === 'multiur') {
                 this.inputFormatElement.value = 'multiur';
-            } else if (type === 'ur' || type === 'detailed-account' || type === 'portfolio') {
+            } else if (type === 'ur' || type === 'detailed-account' || type === 'eth-sign-request' || type === 'portfolio') {
                 this.inputFormatElement.value = 'ur';
             } else {
                 this.inputFormatElement.value = 'auto';
