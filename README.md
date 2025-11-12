@@ -4,6 +4,14 @@
 
 🚀 **[Live Demo](https://irfan798.github.io/bcur.me)**
 
+## Video Overview
+
+Watch this video for an introduction to BC-UR concepts and a demonstration of the playground features:
+
+[![BC-UR Playground Overview](https://img.youtube.com/vi/CYCd3Yc_XoQ/maxresdefault.jpg)](https://youtu.be/CYCd3Yc_XoQ?si=aa2bRwxogO4MWo-C)
+
+**[Watch on YouTube →](https://youtu.be/CYCd3Yc_XoQ?si=aa2bRwxogO4MWo-C)**
+
 ## What is This?
 
 A client-side tool for developers and users to understand and debug BC-UR encoded data. No backend, no tracking—all processing happens in your browser.
